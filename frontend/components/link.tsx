@@ -1,7 +1,7 @@
 import * as Headless from "@headlessui/react";
 import type React from "react";
 import { forwardRef } from "react";
-import { Link as RouterLink, type LinkProps } from "react-router";
+import { type LinkProps, Link as RouterLink } from "react-router";
 
 export const Link = forwardRef(function Link(
 	{ href, ...props }: { href: LinkProps["to"] } & Omit<LinkProps, "to">,

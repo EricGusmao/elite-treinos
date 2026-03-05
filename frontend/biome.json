@@ -23,8 +23,8 @@
 			"recommended": true
 		},
 		"domains": {
-      		"react": "recommended"
-    	}
+			"react": "recommended"
+		}
 	},
 	"javascript": {
 		"formatter": {
