@@ -12,14 +12,11 @@ elite-treinos/
 
 ## Tech Stack
 
-### Frontend (exists)
-- **Framework**: React 19 + React Router v7 (SPA mode, `ssr: false`)
-- **Build**: Vite 7 + `@tailwindcss/vite`
-- **Styling**: Tailwind CSS v4, Inter font (rsms.me)
-- **UI Components**: Headless UI + Heroicons + custom component library (catalyst UI) in `components/`
-- **Linter/Formatter**: Biome (tabs, double quotes, recommended rules)
+### Frontend (go to @./frontend/CLAUDE.md for more)
+- **Framework**: React 19 + React Router v7 (SPA mode)
+- **Build**: Vite 7 + Tailwind CSS v4
 - **Language**: TypeScript (strict mode)
-- **Path alias**: `~/*` maps to `./app/*`
+- **Linter/Formatter**: Biome
 
 ### Backend (go to @./backend/CLAUDE.md for more)
 - **Framework**: Laravel (PHP 8+)
@@ -48,31 +45,6 @@ elite-treinos/
 - **Treinos (templates)**: code (A/B/C/D), name, objective, exercises list
 - **Exercicios**: order, name, sets, reps/time, notes (optional)
 - **Treinos atribuidos**: student, workout template, assigning personal, assigned_at
-
-## Frontend Architecture
-
-### Routes
-```
-/                           # Login page
-/admin/personais            # Superadmin: list personal trainers
-/admin/personais/novo       # Superadmin: create personal
-/admin/personais/:id        # Superadmin: personal detail (view students)
-/admin/personais/:id/editar # Superadmin: edit personal
-/personal/alunos            # Personal: list students
-/personal/alunos/novo       # Personal: create student
-/personal/alunos/:id        # Personal: student detail (view/assign workouts)
-/personal/alunos/:id/editar # Personal: edit student
-/aluno/treinos              # Student: list assigned workouts
-/aluno/treinos/:id          # Student: workout detail (exercises)
-```
-
-### Layout Structure
-- Each role has its own layout component: `admin/layout.tsx`, `personal/layout.tsx`, `aluno/layout.tsx`
-- Shared UI components live in `components/` (Catalyst-style: button, table, input, sidebar, etc.)
-- Mock data in `app/data/mock.ts` (types + sample data) - to be replaced by API calls
-
-### Formatting
-Run `npm run format` inside `frontend/` to format with Biome.
 
 ## API Endpoints (to be implemented)
 
@@ -108,7 +80,6 @@ Run `npm run format` inside `frontend/` to format with Biome.
 
 ## Conventions
 - Language: UI text in Portuguese (pt-BR), code identifiers in English or Portuguese matching domain
-- Biome config: tabs, double quotes, recommended lint rules
 - API responses: standardized JSON format with proper HTTP status codes (401/403/404/422)
 - Passwords stored securely (bcrypt via Laravel)
 
