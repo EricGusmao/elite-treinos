@@ -29,11 +29,19 @@ export default function NovoPersonal() {
 						</Field>
 						<Field>
 							<Label>Email</Label>
-							<Input name="email" type="email" placeholder="email@exemplo.com" />
+							<Input
+								name="email"
+								type="email"
+								placeholder="email@exemplo.com"
+							/>
 						</Field>
 						<Field>
 							<Label>Senha</Label>
-							<Input name="password" type="password" placeholder="Senha de acesso" />
+							<Input
+								name="password"
+								type="password"
+								placeholder="Senha de acesso"
+							/>
 						</Field>
 						<Field>
 							<Label>Telefone</Label>

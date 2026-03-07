@@ -20,9 +20,7 @@ export default function MeusTreinos() {
 	return (
 		<>
 			<Heading>Meus Treinos</Heading>
-			<Text className="mt-2">
-				Visualize os treinos atribuidos para voce.
-			</Text>
+			<Text className="mt-2">Visualize os treinos atribuidos para voce.</Text>
 
 			{meusTreinos.length === 0 ? (
 				<Text className="mt-8">Nenhum treino atribuido ainda.</Text>
@@ -37,10 +35,7 @@ export default function MeusTreinos() {
 					</TableHead>
 					<TableBody>
 						{meusTreinos.map((treino) => (
-							<TableRow
-								key={treino.id}
-								href={`/aluno/treinos/${treino.id}`}
-							>
+							<TableRow key={treino.id} href={`/aluno/treinos/${treino.id}`}>
 								<TableCell>
 									<Badge color={treinoBadgeColor[treino.codigo]}>
 										Treino {treino.codigo}

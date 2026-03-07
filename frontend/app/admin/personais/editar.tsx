@@ -36,11 +36,7 @@ export default function EditarPersonal() {
 						</Field>
 						<Field>
 							<Label>Email</Label>
-							<Input
-								name="email"
-								type="email"
-								defaultValue={personal.email}
-							/>
+							<Input name="email" type="email" defaultValue={personal.email} />
 						</Field>
 						<Field>
 							<Label>Telefone</Label>

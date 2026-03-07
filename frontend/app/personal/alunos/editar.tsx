@@ -37,11 +37,7 @@ export default function EditarAluno() {
 						</Field>
 						<Field>
 							<Label>Email</Label>
-							<Input
-								name="email"
-								type="email"
-								defaultValue={aluno.email}
-							/>
+							<Input name="email" type="email" defaultValue={aluno.email} />
 						</Field>
 						<Field>
 							<Label>Data de Nascimento</Label>

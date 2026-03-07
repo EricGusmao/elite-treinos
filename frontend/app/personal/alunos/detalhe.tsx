@@ -6,7 +6,12 @@ import {
 	DescriptionList,
 	DescriptionTerm,
 } from "components/description-list";
-import { Dialog, DialogActions, DialogBody, DialogTitle } from "components/dialog";
+import {
+	Dialog,
+	DialogActions,
+	DialogBody,
+	DialogTitle,
+} from "components/dialog";
 import { Field, Label } from "components/fieldset";
 import { Heading, Subheading } from "components/heading";
 import { Select } from "components/select";

@@ -40,10 +40,11 @@ export default function PersonaisIndex() {
 				</TableHead>
 				<TableBody>
 					{personais.map((personal) => (
-						<TableRow key={personal.id} href={`/admin/personais/${personal.id}`}>
-							<TableCell className="font-medium">
-								{personal.nome}
-							</TableCell>
+						<TableRow
+							key={personal.id}
+							href={`/admin/personais/${personal.id}`}
+						>
+							<TableCell className="font-medium">{personal.nome}</TableCell>
 							<TableCell>{personal.email}</TableCell>
 							<TableCell>{personal.telefone}</TableCell>
 							<TableCell>

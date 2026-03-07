@@ -69,9 +69,7 @@ export default function TreinoDetalhe() {
 							<TableCell>{ex.series}</TableCell>
 							<TableCell>{ex.repeticoes}</TableCell>
 							<TableCell>
-								{ex.observacoes || (
-									<span className="text-zinc-400">—</span>
-								)}
+								{ex.observacoes || <span className="text-zinc-400">—</span>}
 							</TableCell>
 						</TableRow>
 					))}

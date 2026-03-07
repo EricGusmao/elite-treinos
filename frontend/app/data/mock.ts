@@ -42,7 +42,12 @@ export const treinos: Treino[] = [
 			{ ordem: 1, nome: "Agachamento livre", series: "3", repeticoes: "10" },
 			{ ordem: 2, nome: "Supino reto", series: "3", repeticoes: "10" },
 			{ ordem: 3, nome: "Remada curvada", series: "3", repeticoes: "10" },
-			{ ordem: 4, nome: "Desenvolvimento militar", series: "3", repeticoes: "12" },
+			{
+				ordem: 4,
+				nome: "Desenvolvimento militar",
+				series: "3",
+				repeticoes: "12",
+			},
 			{ ordem: 5, nome: "Prancha", series: "3", repeticoes: "30-45s" },
 		],
 	},
@@ -182,7 +187,10 @@ export const alunos: Aluno[] = [
 	},
 ];
 
-export const treinoBadgeColor: Record<string, "blue" | "green" | "amber" | "purple"> = {
+export const treinoBadgeColor: Record<
+	string,
+	"blue" | "green" | "amber" | "purple"
+> = {
 	A: "blue",
 	B: "green",
 	C: "amber",

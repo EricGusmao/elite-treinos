@@ -30,7 +30,11 @@ export default function NovoAluno() {
 						</Field>
 						<Field>
 							<Label>Email</Label>
-							<Input name="email" type="email" placeholder="email@exemplo.com" />
+							<Input
+								name="email"
+								type="email"
+								placeholder="email@exemplo.com"
+							/>
 						</Field>
 						<Field>
 							<Label>Senha</Label>
