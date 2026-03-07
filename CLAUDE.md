@@ -33,7 +33,7 @@ composer install                          # install dependencies
 composer run dev                          # run server + queue + pail + vite concurrently
 php artisan serve                         # API server only
 php artisan migrate --seed                # run migrations and seeders
-php artisan test --compact                # run all tests (Pest)
+php artisan test --compact                # run all tests (Pest) — MUST pass before any commit
 php artisan test --compact --filter=Name  # run single test
 vendor/bin/pint --dirty --format agent    # format modified PHP files (MUST run after changes)
 ```
@@ -54,7 +54,7 @@ vendor/bin/pint --dirty --format agent    # format modified PHP files (MUST run 
 - **Auth**: Laravel Sanctum (stateful API via `$middleware->statefulApi()`)
 - **API docs**: Swagger/OpenAPI via Scramble at `/api/docs`
 - **Pint config** (`pint.json`): Laravel preset with `declare_strict_types`, `final_class`, strict comparison, ordered class elements
-- **Testing**: Pest 4 (prefer feature tests, use factories)
+- **Testing**: Pest 4 (prefer feature tests, use factories) — **required for all backend changes**
 
 ### Key Pint Rules (affects all PHP code)
 - All classes must be `final` (enforced by `final_class` rule)
@@ -106,6 +106,24 @@ vendor/bin/pint --dirty --format agent    # format modified PHP files (MUST run 
 
 ### Shared
 - `GET /api/treinos` — list workout templates
+
+## TDD Workflow (MANDATORY)
+
+**All backend features must follow the Red → Green → Refactor cycle:**
+
+1. **Write a failing test first** — before writing any implementation code
+2. **Run the test to confirm it fails** (`php artisan test --compact --filter=TestName`)
+3. **Write the minimum code to make it pass** — no gold-plating
+4. **Run all tests** to ensure nothing regressed (`php artisan test --compact`)
+5. **Refactor** if needed, keeping tests green
+6. **Format** (`vendor/bin/pint --dirty --format agent`)
+
+**Rules:**
+- Never write implementation code without a corresponding test
+- Every API endpoint must have at least one feature test covering: happy path, auth/authorization, and validation errors
+- Use factories for test data — never hardcode IDs or rely on seeded data
+- Tests must be isolated (use `RefreshDatabase` or `LazilyRefreshDatabase`)
+- Business rule constraints (max 2 workouts, no duplicates, ownership) must each have a dedicated test
 
 ## Conventions
 - UI text in Portuguese (pt-BR); code identifiers in English or Portuguese matching domain

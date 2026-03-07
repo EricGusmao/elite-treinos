@@ -8,6 +8,7 @@
 - **Linter/Formatter**: Biome (tabs, double quotes, recommended rules)
 - **Language**: TypeScript (strict mode)
 - **Path alias**: `~/*` maps to `./app/*`
+- **Testing**: Vitest + Testing Library (`@testing-library/react`, `@testing-library/user-event`) — **required for all frontend changes**
 
 ## Routes
 ```
