@@ -1,0 +1,90 @@
+import { EllipsisVerticalIcon } from "@heroicons/react/16/solid";
+import { Badge } from "components/badge";
+import { Button } from "components/button";
+import {
+	Dropdown,
+	DropdownButton,
+	DropdownItem,
+	DropdownMenu,
+} from "components/dropdown";
+import { Heading } from "components/heading";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "components/table";
+import { alunos, treinoBadgeColor } from "~/data/mock";
+
+const meusAlunos = alunos.filter((a) => a.personalId === "1");
+
+export default function AlunosIndex() {
+	return (
+		<>
+			<div className="flex items-end justify-between gap-4">
+				<Heading>Alunos</Heading>
+				<Button href="/personal/alunos/novo">Novo Aluno</Button>
+			</div>
+
+			<Table className="mt-8">
+				<TableHead>
+					<TableRow>
+						<TableHeader>Nome</TableHeader>
+						<TableHeader>Email</TableHeader>
+						<TableHeader>Data de Nascimento</TableHeader>
+						<TableHeader>Treinos</TableHeader>
+						<TableHeader className="w-0">
+							<span className="sr-only">Acoes</span>
+						</TableHeader>
+					</TableRow>
+				</TableHead>
+				<TableBody>
+					{meusAlunos.map((aluno) => (
+						<TableRow key={aluno.id} href={`/personal/alunos/${aluno.id}`}>
+							<TableCell className="font-medium">{aluno.nome}</TableCell>
+							<TableCell>{aluno.email}</TableCell>
+							<TableCell>
+								{new Date(aluno.dataNascimento).toLocaleDateString("pt-BR")}
+							</TableCell>
+							<TableCell>
+								<div className="flex gap-1.5">
+									{aluno.treinos.length > 0 ? (
+										aluno.treinos.map((t) => (
+											<Badge key={t} color={treinoBadgeColor[t]}>
+												Treino {t}
+											</Badge>
+										))
+									) : (
+										<span className="text-zinc-400">Nenhum</span>
+									)}
+								</div>
+							</TableCell>
+							<TableCell>
+								<div className="-mx-3 -my-1.5 sm:-mx-2.5">
+									<Dropdown>
+										<DropdownButton plain aria-label="Opcoes">
+											<EllipsisVerticalIcon />
+										</DropdownButton>
+										<DropdownMenu anchor="bottom end">
+											<DropdownItem href={`/personal/alunos/${aluno.id}`}>
+												Ver detalhes
+											</DropdownItem>
+											<DropdownItem
+												href={`/personal/alunos/${aluno.id}/editar`}
+											>
+												Editar
+											</DropdownItem>
+											<DropdownItem>Excluir</DropdownItem>
+										</DropdownMenu>
+									</Dropdown>
+								</div>
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+		</>
+	);
+}
