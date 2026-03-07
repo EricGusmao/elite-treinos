@@ -1,119 +1,117 @@
-# Elite Treinos
+# CLAUDE.md
 
-Fullstack case project: a platform where personal trainers manage students and assign workouts (based on pre-existing templates A/B/C/D), while students log in and view their assigned workouts.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Elite Treinos: fullstack platform where personal trainers manage students and assign workouts (templates A/B/C/D). Three roles: superadmin, personal, aluno (student).
 
 ## Project Structure
 
 ```
 elite-treinos/
-  frontend/    # React SPA (React Router v7 + Vite + Tailwind v4)
-  backend/     # Laravel API (to be created)
+  frontend/    # React SPA (React Router v7 + Vite 7 + Tailwind v4)
+  backend/     # Laravel 12 API (PHP 8.5, PostgreSQL, Sanctum auth)
 ```
 
-## Tech Stack
+See `frontend/CLAUDE.md` and `backend/CLAUDE.md` for stack-specific rules.
 
-### Frontend (go to @./frontend/CLAUDE.md for more)
-- **Framework**: React 19 + React Router v7 (SPA mode)
-- **Build**: Vite 7 + Tailwind CSS v4
-- **Language**: TypeScript (strict mode)
-- **Linter/Formatter**: Biome
+## Common Commands
 
-### Backend (go to @./backend/CLAUDE.md for more)
-- **Framework**: Laravel (PHP 8+)
-- **Database**: PostgreSQL
-- **API**: REST (JSON), documented with Swagger/OpenAPI using Scramble
-- **Auth**: Token-based (Laravel Sanctum recommended)
+### Frontend (`cd frontend`)
+```bash
+npm install              # install dependencies
+npm run dev              # dev server (Vite)
+npm run build            # production build
+npm run format           # format with Biome
+npm run typecheck        # TypeScript type checking
+```
 
-## Domain Model
+### Backend (`cd backend`)
+```bash
+composer install                          # install dependencies
+composer run dev                          # run server + queue + pail + vite concurrently
+php artisan serve                         # API server only
+php artisan migrate --seed                # run migrations and seeders
+php artisan test --compact                # run all tests (Pest)
+php artisan test --compact --filter=Name  # run single test
+vendor/bin/pint --dirty --format agent    # format modified PHP files (MUST run after changes)
+```
 
-### User Roles (RBAC)
-1. **Superadmin** - manages personal trainers (CRUD), views their students (read-only)
-2. **Personal** - manages their own students (CRUD), creates student login, assigns up to 2 workouts per student from templates A/B/C/D
-3. **Aluno (Student)** - views assigned workouts only (read-only)
+## Architecture
 
-### Key Business Rules
+### Frontend
+- **SPA mode** (`ssr: false`) with React Router v7 file-based routing
+- **Routes** defined in `frontend/app/routes.ts` — three role-based layout groups (`admin/`, `personal/`, `aluno/`)
+- **UI components**: Catalyst-style component library in `frontend/components/` (Headless UI + Heroicons)
+- **Mock data** in `frontend/app/data/mock.ts` — types and sample data, to be replaced by API calls
+- **Biome** for linting/formatting (tabs, double quotes)
+- **Path alias**: `~/*` maps to `./app/*`
+
+### Backend
+- **Laravel 12** streamlined structure — no `Kernel.php`, middleware configured in `bootstrap/app.php`
+- **Database**: PostgreSQL (`DB_CONNECTION=pgsql` in `.env`)
+- **Auth**: Laravel Sanctum (stateful API via `$middleware->statefulApi()`)
+- **API docs**: Swagger/OpenAPI via Scramble at `/api/docs`
+- **Pint config** (`pint.json`): Laravel preset with `declare_strict_types`, `final_class`, strict comparison, ordered class elements
+- **Testing**: Pest 4 (prefer feature tests, use factories)
+
+### Key Pint Rules (affects all PHP code)
+- All classes must be `final` (enforced by `final_class` rule)
+- All files must have `declare(strict_types=1)`
+- Use strict comparison (`===`/`!==`), no superfluous elseif/else
+
+## Domain Model & Business Rules
+
+### Roles (RBAC)
+1. **Superadmin** — CRUD personal trainers, read-only view of their students
+2. **Personal** — CRUD own students, assign up to 2 workouts per student from templates A/B/C/D
+3. **Aluno** — read-only view of assigned workouts
+
+### Constraints
 - 4 pre-seeded workout templates: A (Full Body), B (Lower Body), C (Upper Body), D (Conditioning + Core)
-- Max 2 workouts per student
-- Cannot assign the same workout twice to the same student
-- Personal can only see/manage their own students
-- Students cannot create or edit anything
+- Max 2 workouts per student; no duplicate assignments
+- Personals can only see/manage their own students
 
 ### Data Entities
 - **Users**: name, email (unique), password (hashed), role (superadmin/personal/aluno)
-- **Personais**: linked to user, phone, CREF (optional)
-- **Alunos**: linked to user, linked to personal, birth date (optional), notes (optional)
-- **Treinos (templates)**: code (A/B/C/D), name, objective, exercises list
+- **Personais**: user_id, phone, CREF (optional)
+- **Alunos**: user_id, personal_id, birth_date (optional), notes (optional)
+- **Treinos** (templates): code (A/B/C/D), name, objective, exercises list
 - **Exercicios**: order, name, sets, reps/time, notes (optional)
-- **Treinos atribuidos**: student, workout template, assigning personal, assigned_at
+- **Treinos atribuidos**: aluno_id, treino_id, personal_id, assigned_at
 
-## API Endpoints (to be implemented)
+## API Endpoints
 
 ### Auth
-- `POST /api/login` - login (returns token + user profile)
-- `POST /api/logout` - logout (revoke token)
-- `GET /api/me` - current user info + role
+- `POST /api/login` — returns token + user profile
+- `POST /api/logout` — revoke token
+- `GET /api/me` — current user info + role
 
 ### Superadmin
-- `GET /api/personais` - list personal trainers
-- `POST /api/personais` - create personal trainer
-- `GET /api/personais/{id}` - get personal detail
-- `PUT /api/personais/{id}` - update personal
-- `DELETE /api/personais/{id}` - delete personal
-- `GET /api/personais/{id}/alunos` - list students of a personal (read-only)
+- `GET|POST /api/personais` — list/create personal trainers
+- `GET|PUT|DELETE /api/personais/{id}` — view/update/delete personal
+- `GET /api/personais/{id}/alunos` — list students of a personal (read-only)
 
 ### Personal
-- `GET /api/alunos` - list own students
-- `POST /api/alunos` - create student (includes user account creation)
-- `GET /api/alunos/{id}` - get student detail
-- `PUT /api/alunos/{id}` - update student
-- `DELETE /api/alunos/{id}` - delete student
-- `POST /api/alunos/{id}/treinos` - assign workout to student
-- `DELETE /api/alunos/{id}/treinos/{treinoId}` - remove workout from student
-- `GET /api/alunos/{id}/treinos` - list student's assigned workouts
+- `GET|POST /api/alunos` — list/create own students
+- `GET|PUT|DELETE /api/alunos/{id}` — view/update/delete student
+- `POST /api/alunos/{id}/treinos` — assign workout
+- `DELETE /api/alunos/{id}/treinos/{treinoId}` — remove workout
+- `GET /api/alunos/{id}/treinos` — list student's workouts
 
 ### Student
-- `GET /api/meus-treinos` - list own assigned workouts
-- `GET /api/meus-treinos/{id}` - workout detail with exercises
+- `GET /api/meus-treinos` — list own workouts
+- `GET /api/meus-treinos/{id}` — workout detail with exercises
 
 ### Shared
-- `GET /api/treinos` - list available workout templates (A/B/C/D)
+- `GET /api/treinos` — list workout templates
 
 ## Conventions
-- Language: UI text in Portuguese (pt-BR), code identifiers in English or Portuguese matching domain
-- API responses: standardized JSON format with proper HTTP status codes (401/403/404/422)
-- Passwords stored securely (bcrypt via Laravel)
-
-## Running the Project
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev       # dev server
-npm run build     # production build
-npm run start     # serve production build
-```
-
-### Backend
-```bash
-cd backend
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-php artisan serve
-```
-
-Swagger UI should be available at `/api/docs`.
-
-## Deliverables Checklist
-- [ ] Backend: Laravel API with all endpoints
-- [ ] Backend: Migrations + seeders (superadmin user, workout templates A/B/C/D)
-- [ ] Backend: RBAC middleware (superadmin, personal, aluno)
-- [ ] Backend: Input validation + standardized error responses
-- [ ] Backend: Swagger/OpenAPI documentation (`/api/docs` + `openapi.yaml`)
-- [ ] Frontend: Replace mock data with API consumption
-- [ ] Frontend: Auth flow (login, token storage, redirect by role)
-- [ ] Frontend: Protected routes per role
-- [ ] README.md with setup instructions and test credentials
-- [ ] Docker support (Dockerfile already exists for frontend)
+- UI text in Portuguese (pt-BR); code identifiers in English or Portuguese matching domain
+- Standardized JSON API responses with proper HTTP status codes (401/403/404/422)
+- Use Form Request classes for validation (not inline)
+- Use Eloquent API Resources for API responses
+- Prefer `Model::query()` over `DB::` facade
+- Use eager loading to prevent N+1 queries
+- Use `config()` helper, never `env()` outside config files
