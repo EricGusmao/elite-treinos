@@ -15,16 +15,20 @@ import {
 	TableHeader,
 	TableRow,
 } from "components/table";
-import { useParams } from "react-router";
+import { data } from "react-router";
 import { treinoBadgeColor, treinos } from "~/data/mock";
+import type { Route } from "./+types/detalhe";
 
-export default function TreinoDetalhe() {
-	const { id } = useParams();
-	const treino = treinos.find((t) => t.id === id);
-
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+	const treino = treinos.find((t) => t.id === params.id);
 	if (!treino) {
-		return <Heading>Treino nao encontrado</Heading>;
+		throw data("Treino nao encontrado", { status: 404 });
 	}
+	return { treino };
+}
+
+export default function TreinoDetalhe({ loaderData }: Route.ComponentProps) {
+	const { treino } = loaderData;
 
 	return (
 		<>

@@ -17,10 +17,16 @@ import {
 	TableRow,
 } from "components/table";
 import { alunos, treinoBadgeColor } from "~/data/mock";
+import type { Route } from "./+types/index";
 
-const meusAlunos = alunos.filter((a) => a.personalId === "1");
+export async function clientLoader() {
+	const meusAlunos = alunos.filter((a) => a.personalId === "1");
+	return { meusAlunos };
+}
 
-export default function AlunosIndex() {
+export default function AlunosIndex({ loaderData }: Route.ComponentProps) {
+	const { meusAlunos } = loaderData;
+
 	return (
 		<>
 			<div className="flex items-end justify-between gap-4">

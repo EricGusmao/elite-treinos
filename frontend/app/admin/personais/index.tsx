@@ -17,8 +17,15 @@ import {
 	TableRow,
 } from "components/table";
 import { personais } from "~/data/mock";
+import type { Route } from "./+types/index";
 
-export default function PersonaisIndex() {
+export async function clientLoader() {
+	return { personais };
+}
+
+export default function PersonaisIndex({ loaderData }: Route.ComponentProps) {
+	const { personais } = loaderData;
+
 	return (
 		<>
 			<div className="flex items-end justify-between gap-4">

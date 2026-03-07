@@ -15,18 +15,21 @@ import {
 	TableHeader,
 	TableRow,
 } from "components/table";
-import { useParams } from "react-router";
+import { data } from "react-router";
 import { alunos, personais, treinoBadgeColor } from "~/data/mock";
+import type { Route } from "./+types/detalhe";
 
-export default function PersonalDetalhe() {
-	const { id } = useParams();
-	const personal = personais.find((p) => p.id === id);
-
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+	const personal = personais.find((p) => p.id === params.id);
 	if (!personal) {
-		return <Heading>Personal nao encontrado</Heading>;
+		throw data("Personal nao encontrado", { status: 404 });
 	}
-
 	const alunosDoPersonal = alunos.filter((a) => a.personalId === personal.id);
+	return { personal, alunosDoPersonal };
+}
+
+export default function PersonalDetalhe({ loaderData }: Route.ComponentProps) {
+	const { personal, alunosDoPersonal } = loaderData;
 
 	return (
 		<>

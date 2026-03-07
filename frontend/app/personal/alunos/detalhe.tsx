@@ -25,21 +25,27 @@ import {
 } from "components/table";
 import { Text } from "components/text";
 import { useState } from "react";
-import { useParams } from "react-router";
+import { data } from "react-router";
 import { alunos, treinoBadgeColor, treinos } from "~/data/mock";
+import type { Route } from "./+types/detalhe";
 
-export default function AlunoDetalhe() {
-	const { id } = useParams();
-	const aluno = alunos.find((a) => a.id === id);
-	const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+	const aluno = alunos.find((a) => a.id === params.id);
 	if (!aluno) {
-		return <Heading>Aluno nao encontrado</Heading>;
+		throw data("Aluno nao encontrado", { status: 404 });
 	}
-
 	const treinosAtribuidos = treinos.filter((t) =>
 		aluno.treinos.includes(t.codigo),
 	);
+	const treinosDisponiveis = treinos.filter(
+		(t) => !aluno.treinos.includes(t.codigo),
+	);
+	return { aluno, treinosAtribuidos, treinosDisponiveis };
+}
+
+export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
+	const { aluno, treinosAtribuidos, treinosDisponiveis } = loaderData;
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const limiteAtingido = aluno.treinos.length >= 2;
 
 	return (
@@ -132,13 +138,11 @@ export default function AlunoDetalhe() {
 					<Field>
 						<Label>Selecione o treino</Label>
 						<Select name="treino">
-							{treinos
-								.filter((t) => !aluno.treinos.includes(t.codigo))
-								.map((t) => (
-									<option key={t.id} value={t.codigo}>
-										Treino {t.codigo} — {t.nome}
-									</option>
-								))}
+							{treinosDisponiveis.map((t) => (
+								<option key={t.id} value={t.codigo}>
+									Treino {t.codigo} — {t.nome}
+								</option>
+							))}
 						</Select>
 					</Field>
 				</DialogBody>

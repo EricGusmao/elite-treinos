@@ -5,16 +5,20 @@ import { Heading } from "components/heading";
 import { Input } from "components/input";
 import { Text } from "components/text";
 import { Textarea } from "components/textarea";
-import { useParams } from "react-router";
+import { data } from "react-router";
 import { alunos } from "~/data/mock";
+import type { Route } from "./+types/editar";
 
-export default function EditarAluno() {
-	const { id } = useParams();
-	const aluno = alunos.find((a) => a.id === id);
-
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+	const aluno = alunos.find((a) => a.id === params.id);
 	if (!aluno) {
-		return <Heading>Aluno nao encontrado</Heading>;
+		throw data("Aluno nao encontrado", { status: 404 });
 	}
+	return { aluno };
+}
+
+export default function EditarAluno({ loaderData }: Route.ComponentProps) {
+	const { aluno } = loaderData;
 
 	return (
 		<>

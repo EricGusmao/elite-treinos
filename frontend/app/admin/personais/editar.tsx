@@ -4,16 +4,20 @@ import { Field, FieldGroup, Fieldset, Label } from "components/fieldset";
 import { Heading } from "components/heading";
 import { Input } from "components/input";
 import { Text } from "components/text";
-import { useParams } from "react-router";
+import { data } from "react-router";
 import { personais } from "~/data/mock";
+import type { Route } from "./+types/editar";
 
-export default function EditarPersonal() {
-	const { id } = useParams();
-	const personal = personais.find((p) => p.id === id);
-
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+	const personal = personais.find((p) => p.id === params.id);
 	if (!personal) {
-		return <Heading>Personal nao encontrado</Heading>;
+		throw data("Personal nao encontrado", { status: 404 });
 	}
+	return { personal };
+}
+
+export default function EditarPersonal({ loaderData }: Route.ComponentProps) {
+	const { personal } = loaderData;
 
 	return (
 		<>

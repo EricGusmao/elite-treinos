@@ -10,13 +10,19 @@ import {
 } from "components/table";
 import { Text } from "components/text";
 import { alunos, treinoBadgeColor, treinos } from "~/data/mock";
+import type { Route } from "./+types/index";
 
-const alunoLogado = alunos.find((a) => a.id === "1")!;
-const meusTreinos = treinos.filter((t) =>
-	alunoLogado.treinos.includes(t.codigo),
-);
+export async function clientLoader() {
+	const alunoLogado = alunos.find((a) => a.id === "1")!;
+	const meusTreinos = treinos.filter((t) =>
+		alunoLogado.treinos.includes(t.codigo),
+	);
+	return { meusTreinos };
+}
 
-export default function MeusTreinos() {
+export default function MeusTreinos({ loaderData }: Route.ComponentProps) {
+	const { meusTreinos } = loaderData;
+
 	return (
 		<>
 			<Heading>Meus Treinos</Heading>
