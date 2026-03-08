@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 final class UpdatePersonalRequest extends FormRequest
 {
@@ -19,7 +20,7 @@ final class UpdatePersonalRequest extends FormRequest
         return [
             'nome' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($personal->user_id)],
-            'password' => ['nullable', 'string', 'min:6'],
+            'password' => ['nullable', Password::defaults()],
             'telefone' => ['required', 'string'],
             'cref' => ['nullable', 'string'],
         ];
