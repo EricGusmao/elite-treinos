@@ -12,7 +12,7 @@ import {
 	DialogBody,
 	DialogTitle,
 } from "components/dialog";
-import { Field, Label } from "components/fieldset";
+import { ErrorMessage, Field, Label } from "components/fieldset";
 import { Heading, Subheading } from "components/heading";
 import { Select } from "components/select";
 import {
@@ -24,29 +24,90 @@ import {
 	TableRow,
 } from "components/table";
 import { Text } from "components/text";
-import { useState } from "react";
-import { data } from "react-router";
-import { alunos, treinoBadgeColor, treinos } from "~/data/mock";
+import { useEffect, useState } from "react";
+import { redirect, useFetcher } from "react-router";
+import { treinoBadgeColor } from "~/data/types";
+import type { Aluno, Treino } from "~/data/types";
+import { ValidationError, api } from "~/lib/api";
 import type { Route } from "./+types/detalhe";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	const aluno = alunos.find((a) => a.id === params.id);
-	if (!aluno) {
-		throw data("Aluno nao encontrado", { status: 404 });
-	}
-	const treinosAtribuidos = treinos.filter((t) =>
-		aluno.treinos.includes(t.codigo),
-	);
-	const treinosDisponiveis = treinos.filter(
+	const [aluno, { data: treinosAtribuidos }, { data: todosTreinos }] =
+		await Promise.all([
+			api.get<Aluno>(`/api/alunos/${params.id}`),
+			api.get<{ data: Treino[] }>(`/api/alunos/${params.id}/treinos`),
+			api.get<{ data: Treino[] }>("/api/treinos"),
+		]);
+
+	const treinosDisponiveis = todosTreinos.filter(
 		(t) => !aluno.treinos.includes(t.codigo),
 	);
+
 	return { aluno, treinosAtribuidos, treinosDisponiveis };
+}
+
+export async function clientAction({
+	request,
+	params,
+}: Route.ClientActionArgs) {
+	const formData = await request.formData();
+	const intent = formData.get("intent");
+
+	if (intent === "delete") {
+		await api.del(`/api/alunos/${params.id}`);
+		return redirect("/personal/alunos");
+	}
+
+	if (intent === "assign") {
+		const treinoId = formData.get("treino_id");
+		try {
+			await api.post(`/api/alunos/${params.id}/treinos`, {
+				treino_id: Number(treinoId),
+			});
+			return { ok: true };
+		} catch (err) {
+			if (err instanceof ValidationError) {
+				const firstError = Object.values(err.errors)[0];
+				return { error: firstError?.[0] ?? "Erro de validacao." };
+			}
+			if (err instanceof Error) {
+				return { error: err.message };
+			}
+			throw err;
+		}
+	}
+
+	if (intent === "remove") {
+		const treinoId = formData.get("treino_id");
+		await api.del(`/api/alunos/${params.id}/treinos/${treinoId}`);
+		return { ok: true };
+	}
+
+	throw new Error(`Unknown intent: ${intent}`);
 }
 
 export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 	const { aluno, treinosAtribuidos, treinosDisponiveis } = loaderData;
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [dialogError, setDialogError] = useState<string | null>(null);
+
+	const deleteFetcher = useFetcher();
+	const assignFetcher = useFetcher();
+	const removeFetcher = useFetcher();
+
+	const deleting = deleteFetcher.state !== "idle";
 	const limiteAtingido = aluno.treinos.length >= 2;
+
+	useEffect(() => {
+		if (assignFetcher.state === "idle" && assignFetcher.data) {
+			if (assignFetcher.data.ok) {
+				setIsDialogOpen(false);
+				setDialogError(null);
+			} else if (assignFetcher.data.error) {
+				setDialogError(assignFetcher.data.error);
+			}
+		}
+	}, [assignFetcher.state, assignFetcher.data]);
 
 	return (
 		<>
@@ -63,7 +124,17 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 					<Button outline href={`/personal/alunos/${aluno.id}/editar`}>
 						Editar
 					</Button>
-					<Button color="red">Excluir</Button>
+					<Button
+						color="red"
+						disabled={deleting}
+						onClick={() => {
+							if (!confirm("Tem certeza que deseja excluir este aluno?"))
+								return;
+							deleteFetcher.submit({ intent: "delete" }, { method: "post" });
+						}}
+					>
+						{deleting ? "Excluindo..." : "Excluir"}
+					</Button>
 				</div>
 			</div>
 
@@ -74,7 +145,9 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 				<DescriptionDetails>{aluno.email}</DescriptionDetails>
 				<DescriptionTerm>Data de Nascimento</DescriptionTerm>
 				<DescriptionDetails>
-					{new Date(aluno.dataNascimento).toLocaleDateString("pt-BR")}
+					{aluno.dataNascimento
+						? new Date(aluno.dataNascimento).toLocaleDateString("pt-BR")
+						: "—"}
 				</DescriptionDetails>
 				<DescriptionTerm>Observacoes</DescriptionTerm>
 				<DescriptionDetails>
@@ -86,7 +159,10 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 				<Subheading>Treinos Atribuidos</Subheading>
 				<Button
 					outline
-					onClick={() => setIsDialogOpen(true)}
+					onClick={() => {
+						setDialogError(null);
+						setIsDialogOpen(true);
+					}}
 					disabled={limiteAtingido}
 				>
 					Atribuir Treino
@@ -124,7 +200,17 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 								<TableCell className="font-medium">{treino.nome}</TableCell>
 								<TableCell>{treino.objetivo}</TableCell>
 								<TableCell>
-									<Button plain>Remover</Button>
+									<Button
+										plain
+										onClick={() =>
+											removeFetcher.submit(
+												{ intent: "remove", treino_id: String(treino.id) },
+												{ method: "post" },
+											)
+										}
+									>
+										Remover
+									</Button>
 								</TableCell>
 							</TableRow>
 						))}
@@ -134,24 +220,32 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 
 			<Dialog open={isDialogOpen} onClose={setIsDialogOpen}>
 				<DialogTitle>Atribuir Treino</DialogTitle>
-				<DialogBody>
-					<Field>
-						<Label>Selecione o treino</Label>
-						<Select name="treino">
-							{treinosDisponiveis.map((t) => (
-								<option key={t.id} value={t.codigo}>
-									Treino {t.codigo} — {t.nome}
-								</option>
-							))}
-						</Select>
-					</Field>
-				</DialogBody>
-				<DialogActions>
-					<Button plain onClick={() => setIsDialogOpen(false)}>
-						Cancelar
-					</Button>
-					<Button onClick={() => setIsDialogOpen(false)}>Atribuir</Button>
-				</DialogActions>
+				<assignFetcher.Form method="post">
+					<input type="hidden" name="intent" value="assign" />
+					<DialogBody>
+						{dialogError && (
+							<ErrorMessage className="mb-4">{dialogError}</ErrorMessage>
+						)}
+						<Field>
+							<Label>Selecione o treino</Label>
+							<Select name="treino_id">
+								{treinosDisponiveis.map((t) => (
+									<option key={t.id} value={t.id}>
+										Treino {t.codigo} — {t.nome}
+									</option>
+								))}
+							</Select>
+						</Field>
+					</DialogBody>
+					<DialogActions>
+						<Button plain onClick={() => setIsDialogOpen(false)}>
+							Cancelar
+						</Button>
+						<Button type="submit" disabled={assignFetcher.state !== "idle"}>
+							{assignFetcher.state !== "idle" ? "Atribuindo..." : "Atribuir"}
+						</Button>
+					</DialogActions>
+				</assignFetcher.Form>
 			</Dialog>
 		</>
 	);

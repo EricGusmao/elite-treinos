@@ -1,12 +1,47 @@
 import { ChevronLeftIcon } from "@heroicons/react/16/solid";
 import { Button } from "components/button";
-import { Field, FieldGroup, Fieldset, Label } from "components/fieldset";
+import {
+	ErrorMessage,
+	Field,
+	FieldGroup,
+	Fieldset,
+	Label,
+} from "components/fieldset";
 import { Heading } from "components/heading";
 import { Input } from "components/input";
 import { Text } from "components/text";
 import { Textarea } from "components/textarea";
+import { Form, redirect, useNavigation } from "react-router";
+import type { Aluno, ApiErrors } from "~/data/types";
+import { ValidationError, api } from "~/lib/api";
+import type { Route } from "./+types/novo";
 
-export default function NovoAluno() {
+export async function clientAction({ request }: Route.ClientActionArgs) {
+	const formData = await request.formData();
+	const data = {
+		nome: formData.get("nome"),
+		email: formData.get("email"),
+		password: formData.get("password"),
+		data_nascimento: formData.get("data_nascimento") || undefined,
+		observacoes: formData.get("observacoes") || undefined,
+	};
+
+	try {
+		const aluno = await api.post<Aluno>("/api/alunos", data);
+		return redirect(`/personal/alunos/${aluno.id}`);
+	} catch (err) {
+		if (err instanceof ValidationError) {
+			return { errors: err.errors };
+		}
+		throw err;
+	}
+}
+
+export default function NovoAluno({ actionData }: Route.ComponentProps) {
+	const navigation = useNavigation();
+	const submitting = navigation.state === "submitting";
+	const errors: ApiErrors = actionData?.errors ?? {};
+
 	return (
 		<>
 			<div className="mb-6">
@@ -21,12 +56,13 @@ export default function NovoAluno() {
 				Preencha os dados para cadastrar um novo aluno.
 			</Text>
 
-			<form className="mt-8 max-w-lg">
+			<Form method="post" className="mt-8 max-w-lg">
 				<Fieldset>
 					<FieldGroup>
 						<Field>
 							<Label>Nome</Label>
 							<Input name="nome" placeholder="Nome completo" />
+							{errors.nome && <ErrorMessage>{errors.nome[0]}</ErrorMessage>}
 						</Field>
 						<Field>
 							<Label>Email</Label>
@@ -35,6 +71,7 @@ export default function NovoAluno() {
 								type="email"
 								placeholder="email@exemplo.com"
 							/>
+							{errors.email && <ErrorMessage>{errors.email[0]}</ErrorMessage>}
 						</Field>
 						<Field>
 							<Label>Senha</Label>
@@ -43,10 +80,16 @@ export default function NovoAluno() {
 								type="password"
 								placeholder="Senha de acesso do aluno"
 							/>
+							{errors.password && (
+								<ErrorMessage>{errors.password[0]}</ErrorMessage>
+							)}
 						</Field>
 						<Field>
 							<Label>Data de Nascimento</Label>
-							<Input name="dataNascimento" type="date" />
+							<Input name="data_nascimento" type="date" />
+							{errors.data_nascimento && (
+								<ErrorMessage>{errors.data_nascimento[0]}</ErrorMessage>
+							)}
 						</Field>
 						<Field>
 							<Label>Observacoes (opcional)</Label>
@@ -54,17 +97,22 @@ export default function NovoAluno() {
 								name="observacoes"
 								placeholder="Lesoes, restricoes, objetivos..."
 							/>
+							{errors.observacoes && (
+								<ErrorMessage>{errors.observacoes[0]}</ErrorMessage>
+							)}
 						</Field>
 					</FieldGroup>
 				</Fieldset>
 
 				<div className="mt-8 flex gap-4">
-					<Button type="submit">Cadastrar</Button>
+					<Button type="submit" disabled={submitting}>
+						{submitting ? "Cadastrando..." : "Cadastrar"}
+					</Button>
 					<Button plain href="/personal/alunos">
 						Cancelar
 					</Button>
 				</div>
-			</form>
+			</Form>
 		</>
 	);
 }

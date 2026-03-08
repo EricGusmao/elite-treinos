@@ -15,15 +15,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "components/table";
-import { data } from "react-router";
-import { treinoBadgeColor, treinos } from "~/data/mock";
+import { treinoBadgeColor } from "~/data/types";
+import type { Treino } from "~/data/types";
+import { api } from "~/lib/api";
 import type { Route } from "./+types/detalhe";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	const treino = treinos.find((t) => t.id === params.id);
-	if (!treino) {
-		throw data("Treino nao encontrado", { status: 404 });
-	}
+	const treino = await api.get<Treino>(`/api/meus-treinos/${params.id}`);
 	return { treino };
 }
 
@@ -64,7 +62,7 @@ export default function TreinoDetalhe({ loaderData }: Route.ComponentProps) {
 					</TableRow>
 				</TableHead>
 				<TableBody>
-					{treino.exercicios.map((ex) => (
+					{treino.exercicios?.map((ex) => (
 						<TableRow key={ex.ordem}>
 							<TableCell className="font-medium tabular-nums">
 								{ex.ordem}

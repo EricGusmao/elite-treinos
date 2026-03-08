@@ -16,11 +16,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "components/table";
-import { alunos, treinoBadgeColor } from "~/data/mock";
+import { treinoBadgeColor } from "~/data/types";
+import type { Aluno } from "~/data/types";
+import { api } from "~/lib/api";
 import type { Route } from "./+types/index";
 
 export async function clientLoader() {
-	const meusAlunos = alunos.filter((a) => a.personalId === "1");
+	const { data: meusAlunos } = await api.get<{ data: Aluno[] }>("/api/alunos");
 	return { meusAlunos };
 }
 
@@ -52,7 +54,9 @@ export default function AlunosIndex({ loaderData }: Route.ComponentProps) {
 							<TableCell className="font-medium">{aluno.nome}</TableCell>
 							<TableCell>{aluno.email}</TableCell>
 							<TableCell>
-								{new Date(aluno.dataNascimento).toLocaleDateString("pt-BR")}
+								{aluno.dataNascimento
+									? new Date(aluno.dataNascimento).toLocaleDateString("pt-BR")
+									: "—"}
 							</TableCell>
 							<TableCell>
 								<div className="flex gap-1.5">

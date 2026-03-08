@@ -15,10 +15,31 @@ import {
 	SidebarSection,
 } from "components/sidebar";
 import { SidebarLayout } from "components/sidebar-layout";
-import { Outlet, useLocation } from "react-router";
+import { useEffect } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router";
+import { useAuth } from "~/lib/auth";
+
+function getInitials(name: string): string {
+	return name
+		.split(" ")
+		.map((w) => w[0])
+		.join("")
+		.slice(0, 2)
+		.toUpperCase();
+}
 
 export default function AdminLayout() {
 	const { pathname } = useLocation();
+	const { user, loading, logout } = useAuth();
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (!loading && (!user || user.role !== "superadmin")) {
+			navigate("/");
+		}
+	}, [user, loading, navigate]);
+
+	if (loading || !user) return null;
 
 	return (
 		<SidebarLayout
@@ -50,15 +71,20 @@ export default function AdminLayout() {
 					</SidebarBody>
 					<SidebarFooter>
 						<SidebarSection>
-							<SidebarItem href="/">
+							<SidebarItem href="/admin/personais">
 								<Avatar
 									className="size-6 bg-zinc-900 text-white dark:bg-white dark:text-black"
-									initials="SA"
+									initials={getInitials(user.name)}
 									square
 								/>
-								<SidebarLabel>Superadmin</SidebarLabel>
+								<SidebarLabel>{user.name}</SidebarLabel>
 							</SidebarItem>
-							<SidebarItem href="/">
+							<SidebarItem
+								onClick={(e: React.MouseEvent) => {
+									e.preventDefault();
+									logout();
+								}}
+							>
 								<ArrowRightStartOnRectangleIcon />
 								<SidebarLabel>Sair</SidebarLabel>
 							</SidebarItem>

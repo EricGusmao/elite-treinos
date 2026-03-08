@@ -9,13 +9,14 @@ import {
 	TableRow,
 } from "components/table";
 import { Text } from "components/text";
-import { alunos, treinoBadgeColor, treinos } from "~/data/mock";
+import { treinoBadgeColor } from "~/data/types";
+import type { Treino } from "~/data/types";
+import { api } from "~/lib/api";
 import type { Route } from "./+types/index";
 
 export async function clientLoader() {
-	const alunoLogado = alunos.find((a) => a.id === "1")!;
-	const meusTreinos = treinos.filter((t) =>
-		alunoLogado.treinos.includes(t.codigo),
+	const { data: meusTreinos } = await api.get<{ data: Treino[] }>(
+		"/api/meus-treinos",
 	);
 	return { meusTreinos };
 }

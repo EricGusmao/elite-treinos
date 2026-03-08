@@ -15,21 +15,29 @@ import {
 	TableHeader,
 	TableRow,
 } from "components/table";
-import { data } from "react-router";
-import { alunos, personais, treinoBadgeColor } from "~/data/mock";
+import { redirect, useFetcher } from "react-router";
+import { treinoBadgeColor } from "~/data/types";
+import type { Aluno, Personal } from "~/data/types";
+import { api } from "~/lib/api";
 import type { Route } from "./+types/detalhe";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	const personal = personais.find((p) => p.id === params.id);
-	if (!personal) {
-		throw data("Personal nao encontrado", { status: 404 });
-	}
-	const alunosDoPersonal = alunos.filter((a) => a.personalId === personal.id);
+	const personal = await api.get<Personal>(`/api/personais/${params.id}`);
+	const { data: alunosDoPersonal } = await api.get<{ data: Aluno[] }>(
+		`/api/personais/${params.id}/alunos`,
+	);
 	return { personal, alunosDoPersonal };
+}
+
+export async function clientAction({ params }: Route.ClientActionArgs) {
+	await api.del(`/api/personais/${params.id}`);
+	return redirect("/admin/personais");
 }
 
 export default function PersonalDetalhe({ loaderData }: Route.ComponentProps) {
 	const { personal, alunosDoPersonal } = loaderData;
+	const fetcher = useFetcher();
+	const deleting = fetcher.state !== "idle";
 
 	return (
 		<>
@@ -46,7 +54,17 @@ export default function PersonalDetalhe({ loaderData }: Route.ComponentProps) {
 					<Button outline href={`/admin/personais/${personal.id}/editar`}>
 						Editar
 					</Button>
-					<Button color="red">Excluir</Button>
+					<Button
+						color="red"
+						disabled={deleting}
+						onClick={() => {
+							if (!confirm("Tem certeza que deseja excluir este personal?"))
+								return;
+							fetcher.submit(null, { method: "post" });
+						}}
+					>
+						{deleting ? "Excluindo..." : "Excluir"}
+					</Button>
 				</div>
 			</div>
 

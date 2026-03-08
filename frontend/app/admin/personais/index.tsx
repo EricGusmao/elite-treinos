@@ -16,10 +16,14 @@ import {
 	TableHeader,
 	TableRow,
 } from "components/table";
-import { personais } from "~/data/mock";
+import { api } from "~/lib/api";
+import type { Personal } from "~/data/types";
 import type { Route } from "./+types/index";
 
 export async function clientLoader() {
+	const { data: personais } = await api.get<{ data: Personal[] }>(
+		"/api/personais",
+	);
 	return { personais };
 }
 
