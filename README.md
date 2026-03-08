@@ -265,14 +265,3 @@ Os testes cobrem:
 - Validacao de entrada (422)
 - Regras de negocio (limite de 2 treinos, sem duplicatas, isolamento por personal)
 
-### Frontend
-
-```bash
-cd frontend
-
-# Rodar testes
-npm run test
-
-# Type checking
-npm run typecheck
-```
