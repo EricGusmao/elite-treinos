@@ -118,7 +118,7 @@ Apos rodar `php artisan migrate --seed`, os seguintes usuarios estarao disponive
 Com o backend rodando, acesse:
 
 ```
-http://localhost:8000/api/docs
+http://localhost:8000/docs/api
 ```
 
 A documentacao e gerada automaticamente pelo **Scramble** e inclui:
