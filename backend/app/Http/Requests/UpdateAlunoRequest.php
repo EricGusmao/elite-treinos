@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+final class UpdateAlunoRequest extends FormRequest
+{
+    /**
+     * @return array<string, array<int, mixed>>
+     */
+    public function rules(): array
+    {
+        $aluno = $this->route('aluno');
+
+        return [
+            'nome' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($aluno->user_id)],
+            'password' => ['nullable', 'string', 'min:6'],
+            'data_nascimento' => ['nullable', 'date'],
+            'observacoes' => ['nullable', 'string'],
+        ];
+    }
+}

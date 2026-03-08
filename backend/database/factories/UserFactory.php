@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -13,14 +14,9 @@ use Illuminate\Support\Str;
  */
 final class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     private static ?string $password;
 
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -30,13 +26,32 @@ final class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => self::$password ??= Hash::make('password'),
+            'role' => Role::Aluno,
             'remember_token' => Str::random(10),
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
+    public function superadmin(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'role' => Role::Superadmin,
+        ]);
+    }
+
+    public function personal(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'role' => Role::Personal,
+        ]);
+    }
+
+    public function aluno(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'role' => Role::Aluno,
+        ]);
+    }
+
     public function unverified(): static
     {
         return $this->state(fn (array $attributes): array => [
