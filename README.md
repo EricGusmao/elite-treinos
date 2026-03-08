@@ -23,7 +23,7 @@ Plataforma fullstack onde **personais** gerenciam seus **alunos** e atribuem **t
 - **PHP** 8.2+
 - **Laravel** 12
 - **PostgreSQL**
-- **Laravel Sanctum** 4 (autenticacao stateful via API tokens)
+- **Laravel Sanctum** 4 (autenticacao stateful via sessao/cookies)
 - **Scramble** (documentacao OpenAPI/Swagger automatica)
 - **Pest** 4 (testes)
 - **Laravel Pint** (formatacao de codigo)
@@ -126,7 +126,7 @@ A documentacao e gerada automaticamente pelo **Scramble** e inclui:
 - Todos os endpoints implementados
 - Payloads de request/response com exemplos
 - Codigos de erro (401, 403, 404, 422)
-- Esquema de autenticacao (Bearer token via Sanctum)
+- Esquema de autenticacao (sessao/cookies via Sanctum)
 - Interface interativa para testar os endpoints
 
 ## Endpoints da API
@@ -135,8 +135,8 @@ A documentacao e gerada automaticamente pelo **Scramble** e inclui:
 
 | Metodo | Rota | Descricao |
 |---|---|---|
-| `POST` | `/api/login` | Login (retorna token + perfil) |
-| `POST` | `/api/logout` | Logout (revoga token) |
+| `POST` | `/api/login` | Login (inicia sessao, retorna perfil) |
+| `POST` | `/api/logout` | Logout (invalida sessao) |
 | `GET` | `/api/me` | Dados do usuario logado |
 
 ### Superadmin
@@ -180,7 +180,7 @@ A documentacao e gerada automaticamente pelo **Scramble** e inclui:
 
 ### Autenticacao e Autorizacao
 
-- **Laravel Sanctum** com API stateful para autenticacao via tokens Bearer
+- **Laravel Sanctum** com API stateful para autenticacao via sessao/cookies (SPA)
 - Controle de acesso (RBAC) baseado no campo `role` do usuario (`superadmin`, `personal`, `aluno`)
 - Middlewares customizados garantem que cada perfil acessa apenas seus endpoints
 - Personal so visualiza/gerencia seus proprios alunos (filtro por `personal_id`)

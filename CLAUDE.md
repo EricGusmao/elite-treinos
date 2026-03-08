@@ -51,7 +51,7 @@ vendor/bin/pint --dirty --format agent    # format modified PHP files (MUST run 
 ### Backend
 - **Laravel 12** streamlined structure — no `Kernel.php`, middleware configured in `bootstrap/app.php`
 - **Database**: PostgreSQL (`DB_CONNECTION=pgsql` in `.env`)
-- **Auth**: Laravel Sanctum (stateful API via `$middleware->statefulApi()`)
+- **Auth**: Laravel Sanctum SPA authentication (session/cookie-based via `$middleware->statefulApi()`)
 - **API docs**: Swagger/OpenAPI via Scramble at `/api/docs`
 - **Pint config** (`pint.json`): Laravel preset with `declare_strict_types`, `final_class`, strict comparison, ordered class elements
 - **Testing**: Pest 4 (prefer feature tests, use factories) — **required for all backend changes**
@@ -84,8 +84,8 @@ vendor/bin/pint --dirty --format agent    # format modified PHP files (MUST run 
 ## API Endpoints
 
 ### Auth
-- `POST /api/login` — returns token + user profile
-- `POST /api/logout` — revoke token
+- `POST /api/login` — session-based login, returns user profile (cookie auth)
+- `POST /api/logout` — invalidate session
 - `GET /api/me` — current user info + role
 
 ### Superadmin
