@@ -19,6 +19,7 @@ async function request<T>(
 	method: string,
 	path: string,
 	body?: unknown,
+	options?: { skipAuthRedirect?: boolean },
 ): Promise<T> {
 	const headers: Record<string, string> = {
 		Accept: "application/json",
@@ -38,7 +39,9 @@ async function request<T>(
 	});
 
 	if (res.status === 401) {
-		window.location.href = "/";
+		if (!options?.skipAuthRedirect) {
+			window.location.href = "/";
+		}
 		throw new Error("Unauthorized");
 	}
 
@@ -68,8 +71,8 @@ async function ensureCsrf(): Promise<void> {
 }
 
 export const api = {
-	get<T>(path: string): Promise<T> {
-		return request<T>("GET", path);
+	get<T>(path: string, options?: { skipAuthRedirect?: boolean }): Promise<T> {
+		return request<T>("GET", path, undefined, options);
 	},
 	async post<T>(path: string, data?: unknown): Promise<T> {
 		await ensureCsrf();

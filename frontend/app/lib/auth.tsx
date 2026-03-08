@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	useEffect(() => {
 		api
-			.get<User>("/api/me")
+			.get<User>("/api/me", { skipAuthRedirect: true })
 			.then(setUser)
 			.catch(() => setUser(null))
 			.finally(() => setLoading(false));
