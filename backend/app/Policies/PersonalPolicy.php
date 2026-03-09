@@ -14,7 +14,7 @@ final class PersonalPolicy
         return $user->isSuperadmin();
     }
 
-    public function view(User $user, Personal $personal): bool
+    public function view(User $user): bool
     {
         return $user->isSuperadmin();
     }
@@ -24,17 +24,17 @@ final class PersonalPolicy
         return $user->isSuperadmin();
     }
 
-    public function update(User $user, Personal $personal): bool
+    public function update(User $user): bool
     {
         return $user->isSuperadmin();
     }
 
-    public function delete(User $user, Personal $personal): bool
+    public function delete(User $user): bool
     {
         return $user->isSuperadmin();
     }
 
-    public function viewAlunos(User $user, Personal $personal): bool
+    public function viewAlunos(User $user): bool
     {
         return $user->isSuperadmin();
     }

@@ -22,7 +22,7 @@ final class AuthController extends Controller
             $request->validated('password'),
         );
 
-        if (! $user) {
+        if (!$user instanceof \App\Models\User) {
             return response()->json(['message' => 'Credenciais inválidas.'], 401);
         }
 
