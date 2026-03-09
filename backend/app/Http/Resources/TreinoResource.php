@@ -20,7 +20,7 @@ final class TreinoResource extends JsonResource
             'codigo' => $this->code,
             'nome' => $this->name,
             'objetivo' => $this->objective,
-            'exercicios' => ExercicioResource::collection($this->whenLoaded('exercicios')),
+            'exercicios' => ExercicioResource::collection($this->exercicios),
         ];
     }
 }

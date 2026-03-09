@@ -21,14 +21,27 @@ export type Treino = {
 	exercicios?: Exercicio[];
 };
 
+export type AlunoListItem = {
+	id: number;
+	nome: string;
+	email: string;
+	dataNascimento: string | null;
+};
+
 export type Aluno = {
 	id: number;
 	nome: string;
 	email: string;
 	dataNascimento: string | null;
 	observacoes: string | null;
-	personalId: number;
-	treinos: Treino[];
+	treinos: TreinoSummary[];
+};
+
+export type TreinoSummary = {
+	id: number;
+	codigo: string;
+	nome: string;
+	objetivo: string;
 };
 
 export type AlunoSummary = {

@@ -167,24 +167,3 @@ it('non-superadmin cannot delete personal', function (): void {
     $this->actingAs($user)->deleteJson("/api/admin/personais/{$personal->id}")
         ->assertForbidden();
 });
-
-// LIST PERSONAL'S ALUNOS
-it('superadmin can list students of a personal', function (): void {
-    $admin = User::factory()->superadmin()->create();
-    $personal = Personal::factory()->create();
-    $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
-
-    $response = $this->actingAs($admin)->getJson("/api/admin/personais/{$personal->id}/alunos");
-
-    $response->assertOk()
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.nome', $aluno->user->name);
-});
-
-it('non-superadmin cannot list personal alunos', function (): void {
-    $user = User::factory()->create(['role' => Role::Aluno]);
-    $personal = Personal::factory()->create();
-
-    $this->actingAs($user)->getJson("/api/admin/personais/{$personal->id}/alunos")
-        ->assertForbidden();
-});

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Resources\TreinoResource;
+use App\Http\Resources\TreinoSummaryResource;
 use App\Models\Treino;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,9 +19,9 @@ final class MeuTreinoController extends Controller
 
         abort_unless($aluno !== null, 403);
 
-        $treinos = $aluno->treinos()->with('exercicios')->get();
+        $treinos = $aluno->treinos;
 
-        return TreinoResource::collection($treinos);
+        return TreinoSummaryResource::collection($treinos);
     }
 
     public function show(Request $request, Treino $treino): JsonResponse

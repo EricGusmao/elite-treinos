@@ -10,12 +10,12 @@ import {
 } from "components/table";
 import { Text } from "components/text";
 import { treinoBadgeColor } from "~/data/types";
-import type { Treino } from "~/data/types";
+import type { TreinoSummary } from "~/data/types";
 import { api } from "~/lib/api";
 import type { Route } from "./+types/index";
 
 export async function clientLoader() {
-	const { data: meusTreinos } = await api.get<{ data: Treino[] }>(
+	const { data: meusTreinos } = await api.get<{ data: TreinoSummary[] }>(
 		"/api/aluno/meus-treinos",
 	);
 	return { meusTreinos };

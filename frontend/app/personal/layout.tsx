@@ -1,5 +1,6 @@
 import {
 	ArrowRightStartOnRectangleIcon,
+	ClipboardDocumentListIcon,
 	HomeIcon,
 	UsersIcon,
 } from "@heroicons/react/20/solid";
@@ -54,6 +55,13 @@ export default function PersonalLayout({ loaderData }: Route.ComponentProps) {
 							>
 								<UsersIcon />
 								<SidebarLabel>Alunos</SidebarLabel>
+							</SidebarItem>
+							<SidebarItem
+								href="/personal/treinos"
+								current={pathname.startsWith("/personal/treinos")}
+							>
+								<ClipboardDocumentListIcon />
+								<SidebarLabel>Treinos</SidebarLabel>
 							</SidebarItem>
 						</SidebarSection>
 					</SidebarBody>

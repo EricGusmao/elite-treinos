@@ -19,7 +19,7 @@ import { Text } from "components/text";
 import { useEffect, useState } from "react";
 import { Form, redirect, useFetcher, useNavigation } from "react-router";
 import { treinoBadgeColor } from "~/data/types";
-import type { Aluno, Treino } from "~/data/types";
+import type { Aluno, TreinoSummary } from "~/data/types";
 import { ValidationError, api } from "~/lib/api";
 import AssignTreinoDialog from "./assign-treino-dialog";
 import type { Route } from "./+types/detalhe";
@@ -27,7 +27,7 @@ import type { Route } from "./+types/detalhe";
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 	const [aluno, { data: treinos }] = await Promise.all([
 		api.get<Aluno>(`/api/personal/alunos/${params.id}`),
-		api.get<{ data: Treino[] }>("/api/treinos"),
+		api.get<{ data: TreinoSummary[] }>("/api/treinos"),
 	]);
 	return { aluno, treinos };
 }
@@ -174,7 +174,7 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 					</TableHead>
 					<TableBody>
 						{aluno.treinos.map((treino) => (
-							<TableRow key={treino.id}>
+							<TableRow key={treino.id} href={`/personal/treinos/${treino.id}`}>
 								<TableCell>
 									<Badge color={treinoBadgeColor[treino.codigo]}>
 										Treino {treino.codigo}
@@ -185,12 +185,13 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 								<TableCell>
 									<Button
 										plain
-										onClick={() =>
+										onClick={(e: React.MouseEvent) => {
+											e.preventDefault();
 											removeFetcher.submit(
 												{ intent: "remove", treino_id: String(treino.id) },
 												{ method: "post" },
-											)
-										}
+											);
+										}}
 									>
 										Remover
 									</Button>

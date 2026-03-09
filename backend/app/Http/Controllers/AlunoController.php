@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAlunoRequest;
 use App\Http\Requests\UpdateAlunoRequest;
+use App\Http\Resources\AlunoListResource;
 use App\Http\Resources\AlunoResource;
 use App\Models\Aluno;
 use Illuminate\Http\JsonResponse;
@@ -21,9 +22,9 @@ final class AlunoController extends Controller
         Gate::authorize('viewAny', Aluno::class);
 
         $personal = $request->user()->personal;
-        $alunos = $personal->alunos()->with(['user', 'treinos'])->get();
+        $alunos = $personal->alunos()->with('user')->get();
 
-        return AlunoResource::collection($alunos);
+        return AlunoListResource::collection($alunos);
     }
 
     public function store(StoreAlunoRequest $request): JsonResponse
@@ -32,6 +33,7 @@ final class AlunoController extends Controller
 
         $personal = $request->user()->personal;
         $aluno = Aluno::createForPersonal($personal, $request->validated());
+        $aluno->load('treinos');
 
         return response()->json(new AlunoResource($aluno), 201);
     }
@@ -50,6 +52,7 @@ final class AlunoController extends Controller
         Gate::authorize('update', $aluno);
 
         $aluno->updateWithUser($request->validated());
+        $aluno->load('treinos');
 
         return response()->json(new AlunoResource($aluno));
     }

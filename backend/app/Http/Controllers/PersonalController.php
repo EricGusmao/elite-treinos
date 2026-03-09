@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePersonalRequest;
 use App\Http\Requests\UpdatePersonalRequest;
+use App\Http\Resources\PersonalDetailResource;
 use App\Http\Resources\PersonalListResource;
 use App\Http\Resources\PersonalResource;
 use App\Models\Personal;
@@ -40,7 +41,7 @@ final class PersonalController extends Controller
 
         $personal->load(['user', 'alunos.user']);
 
-        return response()->json(new PersonalResource($personal));
+        return response()->json(new PersonalDetailResource($personal));
     }
 
     public function update(UpdatePersonalRequest $request, Personal $personal): JsonResponse

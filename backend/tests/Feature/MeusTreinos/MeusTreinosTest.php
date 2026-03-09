@@ -8,7 +8,7 @@ use App\Models\Treino;
 use App\Models\User;
 
 // LIST
-it('student can list their assigned workouts', function (): void {
+it('student can list their assigned workouts without exercicios', function (): void {
     $personal = Personal::factory()->create();
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
     $treino = Treino::query()->where('code', 'A')->first();
@@ -23,7 +23,9 @@ it('student can list their assigned workouts', function (): void {
     $response->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.codigo', 'A')
-        ->assertJsonPath('data.0.nome', $treino->name);
+        ->assertJsonPath('data.0.nome', $treino->name)
+        ->assertJsonPath('data.0.objetivo', $treino->objective)
+        ->assertJsonMissingPath('data.0.exercicios');
 });
 
 it('non-student cannot access meus-treinos', function (): void {

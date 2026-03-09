@@ -6,7 +6,6 @@ use App\Http\Controllers\AlunoController;
 use App\Http\Controllers\AlunoTreinoController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\MeuTreinoController;
-use App\Http\Controllers\PersonalAlunoController;
 use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\TreinoController;
 use Illuminate\Support\Facades\Route;
@@ -18,7 +17,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::prefix('admin')->group(function (): void {
         Route::apiResource('personais', PersonalController::class)
             ->parameters(['personais' => 'personal']);
-        Route::get('/personais/{personal}/alunos', [PersonalAlunoController::class, 'index']);
     });
 
     // Personal
@@ -26,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::apiResource('alunos', AlunoController::class);
         Route::post('/alunos/{aluno}/treinos', [AlunoTreinoController::class, 'store']);
         Route::delete('/alunos/{aluno}/treinos/{treino}', [AlunoTreinoController::class, 'destroy']);
+        Route::get('/treinos/{treino}', [TreinoController::class, 'show']);
     });
 
     // Aluno

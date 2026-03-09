@@ -8,7 +8,7 @@ use App\Models\Treino;
 use App\Models\User;
 
 // LIST
-it('personal can list only their own students', function (): void {
+it('personal can list only their own students with nome, email and dataNascimento', function (): void {
     $personal = Personal::factory()->create();
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
     Aluno::factory()->create(); // another personal's student
@@ -17,7 +17,11 @@ it('personal can list only their own students', function (): void {
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.nome', $aluno->user->name);
+        ->assertJsonPath('data.0.nome', $aluno->user->name)
+        ->assertJsonPath('data.0.email', $aluno->user->email)
+        ->assertJsonMissingPath('data.0.observacoes')
+        ->assertJsonMissingPath('data.0.treinos')
+        ->assertJsonMissingPath('data.0.personalId');
 });
 
 it('non-personal cannot list alunos', function (): void {
@@ -47,7 +51,7 @@ it('personal can create a student', function (): void {
         ->assertJsonPath('email', 'aluno@test.com')
         ->assertJsonPath('dataNascimento', '2000-01-15')
         ->assertJsonPath('observacoes', 'Observacao teste')
-        ->assertJsonPath('personalId', $personal->id);
+        ->assertJsonPath('treinos', []);
 
     $this->assertDatabaseHas('users', [
         'email' => 'aluno@test.com',
@@ -89,7 +93,7 @@ it('non-personal cannot create aluno', function (): void {
 });
 
 // SHOW
-it('personal can view their own student with embedded treinos', function (): void {
+it('personal can view their own student with treino summaries (no exercicios)', function (): void {
     $personal = Personal::factory()->create();
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
     $treino = Treino::query()->where('code', 'A')->first();
@@ -104,7 +108,10 @@ it('personal can view their own student with embedded treinos', function (): voi
     $response->assertOk()
         ->assertJsonPath('nome', $aluno->user->name)
         ->assertJsonPath('treinos.0.codigo', 'A')
-        ->assertJsonPath('treinos.0.nome', $treino->name);
+        ->assertJsonPath('treinos.0.nome', $treino->name)
+        ->assertJsonPath('treinos.0.objetivo', $treino->objective)
+        ->assertJsonMissingPath('treinos.0.exercicios')
+        ->assertJsonMissingPath('personalId');
 });
 
 it('personal cannot view another personals student', function (): void {

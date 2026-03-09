@@ -1,5 +1,4 @@
 import { EllipsisVerticalIcon } from "@heroicons/react/16/solid";
-import { Badge } from "components/badge";
 import { Button } from "components/button";
 import {
 	Dropdown,
@@ -16,13 +15,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "components/table";
-import { treinoBadgeColor } from "~/data/types";
-import type { Aluno } from "~/data/types";
+import type { AlunoListItem } from "~/data/types";
 import { api } from "~/lib/api";
 import type { Route } from "./+types/index";
 
 export async function clientLoader() {
-	const { data: meusAlunos } = await api.get<{ data: Aluno[] }>(
+	const { data: meusAlunos } = await api.get<{ data: AlunoListItem[] }>(
 		"/api/personal/alunos",
 	);
 	return { meusAlunos };
@@ -44,7 +42,6 @@ export default function AlunosIndex({ loaderData }: Route.ComponentProps) {
 						<TableHeader>Nome</TableHeader>
 						<TableHeader>Email</TableHeader>
 						<TableHeader>Data de Nascimento</TableHeader>
-						<TableHeader>Treinos</TableHeader>
 						<TableHeader className="w-0">
 							<span className="sr-only">Acoes</span>
 						</TableHeader>
@@ -59,19 +56,6 @@ export default function AlunosIndex({ loaderData }: Route.ComponentProps) {
 								{aluno.dataNascimento
 									? new Date(aluno.dataNascimento).toLocaleDateString("pt-BR")
 									: "—"}
-							</TableCell>
-							<TableCell>
-								<div className="flex gap-1.5">
-									{aluno.treinos.length > 0 ? (
-										aluno.treinos.map((t) => (
-											<Badge key={t.codigo} color={treinoBadgeColor[t.codigo]}>
-												Treino {t.codigo}
-											</Badge>
-										))
-									) : (
-										<span className="text-zinc-400">Nenhum</span>
-									)}
-								</div>
 							</TableCell>
 							<TableCell>
 								<div className="-mx-3 -my-1.5 sm:-mx-2.5">

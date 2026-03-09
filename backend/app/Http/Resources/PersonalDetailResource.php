@@ -7,8 +7,8 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\Aluno */
-final class AlunoResource extends JsonResource
+/** @mixin \App\Models\Personal */
+final class PersonalDetailResource extends JsonResource
 {
     /**
      * @return array<string, mixed>
@@ -19,9 +19,9 @@ final class AlunoResource extends JsonResource
             'id' => $this->id,
             'nome' => $this->user->name,
             'email' => $this->user->email,
-            'dataNascimento' => $this->birth_date?->toDateString(),
-            'observacoes' => $this->notes,
-            'treinos' => TreinoSummaryResource::collection($this->treinos),
+            'telefone' => $this->phone,
+            'cref' => $this->cref,
+            'alunos' => AlunoSummaryResource::collection($this->alunos),
         ];
     }
 }

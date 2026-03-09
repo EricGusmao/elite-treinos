@@ -8,7 +8,7 @@ import {
 import { ErrorMessage, Field, Label } from "components/fieldset";
 import { Select } from "components/select";
 import type { FetcherWithComponents } from "react-router";
-import type { Treino } from "~/data/types";
+import type { TreinoSummary } from "~/data/types";
 
 export default function AssignTreinoDialog({
 	open,
@@ -18,7 +18,7 @@ export default function AssignTreinoDialog({
 }: {
 	open: boolean;
 	onClose: (open: boolean) => void;
-	treinos: Treino[];
+	treinos: TreinoSummary[];
 	fetcher: FetcherWithComponents<{ ok?: boolean; error?: string }>;
 }) {
 	const error = fetcher.data?.error ?? null;

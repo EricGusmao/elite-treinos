@@ -23,6 +23,8 @@ export default [
 		route("/personal/alunos/novo", "personal/alunos/novo.tsx"),
 		route("/personal/alunos/:id", "personal/alunos/detalhe.tsx"),
 		route("/personal/alunos/:id/editar", "personal/alunos/editar.tsx"),
+		route("/personal/treinos", "personal/treinos/index.tsx"),
+		route("/personal/treinos/:id", "personal/treinos/detalhe.tsx"),
 	]),
 
 	// Aluno
