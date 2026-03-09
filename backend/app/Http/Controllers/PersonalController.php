@@ -37,7 +37,7 @@ final class PersonalController extends Controller
     {
         Gate::authorize('view', $personal);
 
-        $personal->load('user');
+        $personal->load(['user', 'alunos.user', 'alunos.treinos']);
 
         return response()->json(new PersonalResource($personal));
     }

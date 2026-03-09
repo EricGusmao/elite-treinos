@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Aluno;
 use App\Models\Personal;
+use App\Models\Treino;
 use App\Models\User;
 
 // LIST
@@ -12,7 +13,7 @@ it('personal can list only their own students', function (): void {
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
     Aluno::factory()->create(); // another personal's student
 
-    $response = $this->actingAs($personal->user)->getJson('/api/alunos');
+    $response = $this->actingAs($personal->user)->getJson('/api/personal/alunos');
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
@@ -22,18 +23,18 @@ it('personal can list only their own students', function (): void {
 it('non-personal cannot list alunos', function (): void {
     $user = User::factory()->superadmin()->create();
 
-    $this->actingAs($user)->getJson('/api/alunos')->assertForbidden();
+    $this->actingAs($user)->getJson('/api/personal/alunos')->assertForbidden();
 });
 
 it('unauthenticated cannot list alunos', function (): void {
-    $this->getJson('/api/alunos')->assertUnauthorized();
+    $this->getJson('/api/personal/alunos')->assertUnauthorized();
 });
 
 // CREATE
 it('personal can create a student', function (): void {
     $personal = Personal::factory()->create();
 
-    $response = $this->actingAs($personal->user)->postJson('/api/alunos', [
+    $response = $this->actingAs($personal->user)->postJson('/api/personal/alunos', [
         'nome' => 'Novo Aluno',
         'email' => 'aluno@test.com',
         'password' => 'secret123',
@@ -57,7 +58,7 @@ it('personal can create a student', function (): void {
 it('returns validation errors for missing fields on aluno create', function (): void {
     $personal = Personal::factory()->create();
 
-    $response = $this->actingAs($personal->user)->postJson('/api/alunos', []);
+    $response = $this->actingAs($personal->user)->postJson('/api/personal/alunos', []);
 
     $response->assertUnprocessable()
         ->assertJsonValidationErrors(['nome', 'email', 'password']);
@@ -67,7 +68,7 @@ it('returns validation error for duplicate email on aluno create', function (): 
     $personal = Personal::factory()->create();
     User::factory()->create(['email' => 'taken@test.com']);
 
-    $response = $this->actingAs($personal->user)->postJson('/api/alunos', [
+    $response = $this->actingAs($personal->user)->postJson('/api/personal/alunos', [
         'nome' => 'Test',
         'email' => 'taken@test.com',
         'password' => 'secret123',
@@ -80,7 +81,7 @@ it('returns validation error for duplicate email on aluno create', function (): 
 it('non-personal cannot create aluno', function (): void {
     $user = User::factory()->superadmin()->create();
 
-    $this->actingAs($user)->postJson('/api/alunos', [
+    $this->actingAs($user)->postJson('/api/personal/alunos', [
         'nome' => 'Test',
         'email' => 'test@test.com',
         'password' => 'secret123',
@@ -88,21 +89,29 @@ it('non-personal cannot create aluno', function (): void {
 });
 
 // SHOW
-it('personal can view their own student', function (): void {
+it('personal can view their own student with embedded treinos', function (): void {
     $personal = Personal::factory()->create();
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
+    $treino = Treino::query()->where('code', 'A')->first();
 
-    $response = $this->actingAs($personal->user)->getJson("/api/alunos/{$aluno->id}");
+    $aluno->treinos()->attach($treino->id, [
+        'personal_id' => $personal->id,
+        'assigned_at' => now(),
+    ]);
+
+    $response = $this->actingAs($personal->user)->getJson("/api/personal/alunos/{$aluno->id}");
 
     $response->assertOk()
-        ->assertJsonPath('nome', $aluno->user->name);
+        ->assertJsonPath('nome', $aluno->user->name)
+        ->assertJsonPath('treinos.0.codigo', 'A')
+        ->assertJsonPath('treinos.0.nome', $treino->name);
 });
 
 it('personal cannot view another personals student', function (): void {
     $personal = Personal::factory()->create();
     $otherAluno = Aluno::factory()->create(); // belongs to a different personal
 
-    $this->actingAs($personal->user)->getJson("/api/alunos/{$otherAluno->id}")
+    $this->actingAs($personal->user)->getJson("/api/personal/alunos/{$otherAluno->id}")
         ->assertForbidden();
 });
 
@@ -111,7 +120,7 @@ it('personal can update their own student', function (): void {
     $personal = Personal::factory()->create();
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
 
-    $response = $this->actingAs($personal->user)->putJson("/api/alunos/{$aluno->id}", [
+    $response = $this->actingAs($personal->user)->putJson("/api/personal/alunos/{$aluno->id}", [
         'nome' => 'Updated Name',
         'email' => $aluno->user->email,
         'observacoes' => 'Updated notes',
@@ -126,7 +135,7 @@ it('personal cannot update another personals student', function (): void {
     $personal = Personal::factory()->create();
     $otherAluno = Aluno::factory()->create();
 
-    $this->actingAs($personal->user)->putJson("/api/alunos/{$otherAluno->id}", [
+    $this->actingAs($personal->user)->putJson("/api/personal/alunos/{$otherAluno->id}", [
         'nome' => 'Updated',
         'email' => $otherAluno->user->email,
     ])->assertForbidden();
@@ -138,7 +147,7 @@ it('personal can delete their own student', function (): void {
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
     $userId = $aluno->user_id;
 
-    $this->actingAs($personal->user)->deleteJson("/api/alunos/{$aluno->id}")
+    $this->actingAs($personal->user)->deleteJson("/api/personal/alunos/{$aluno->id}")
         ->assertNoContent();
 
     $this->assertDatabaseMissing('alunos', ['id' => $aluno->id]);
@@ -149,6 +158,6 @@ it('personal cannot delete another personals student', function (): void {
     $personal = Personal::factory()->create();
     $otherAluno = Aluno::factory()->create();
 
-    $this->actingAs($personal->user)->deleteJson("/api/alunos/{$otherAluno->id}")
+    $this->actingAs($personal->user)->deleteJson("/api/personal/alunos/{$otherAluno->id}")
         ->assertForbidden();
 });

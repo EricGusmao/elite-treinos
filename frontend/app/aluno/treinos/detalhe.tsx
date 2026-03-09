@@ -21,7 +21,7 @@ import { api } from "~/lib/api";
 import type { Route } from "./+types/detalhe";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	const treino = await api.get<Treino>(`/api/meus-treinos/${params.id}`);
+	const treino = await api.get<Treino>(`/api/aluno/meus-treinos/${params.id}`);
 	return { treino };
 }
 

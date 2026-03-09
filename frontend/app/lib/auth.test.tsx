@@ -35,10 +35,7 @@ function TestConsumer() {
 	return (
 		<div>
 			<div data-testid="user">{user ? user.name : "null"}</div>
-			<button
-				type="button"
-				onClick={() => login("test@test.com", "password")}
-			>
+			<button type="button" onClick={() => login("test@test.com", "password")}>
 				Login
 			</button>
 			<button type="button" onClick={() => logout()}>

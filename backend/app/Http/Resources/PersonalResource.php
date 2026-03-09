@@ -21,6 +21,7 @@ final class PersonalResource extends JsonResource
             'email' => $this->user->email,
             'telefone' => $this->phone,
             'cref' => $this->cref,
+            'alunos' => AlunoResource::collection($this->whenLoaded('alunos')),
         ];
     }
 }

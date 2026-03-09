@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Role;
 use App\Models\Aluno;
 use App\Models\Personal;
+use App\Models\Treino;
 use App\Models\User;
 
 // LIST
@@ -12,7 +13,7 @@ it('superadmin can list personais', function (): void {
     $admin = User::factory()->superadmin()->create();
     $personal = Personal::factory()->create();
 
-    $response = $this->actingAs($admin)->getJson('/api/personais');
+    $response = $this->actingAs($admin)->getJson('/api/admin/personais');
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
@@ -22,18 +23,18 @@ it('superadmin can list personais', function (): void {
 it('non-superadmin cannot list personais', function (): void {
     $user = User::factory()->create(['role' => Role::Personal]);
 
-    $this->actingAs($user)->getJson('/api/personais')->assertForbidden();
+    $this->actingAs($user)->getJson('/api/admin/personais')->assertForbidden();
 });
 
 it('unauthenticated cannot list personais', function (): void {
-    $this->getJson('/api/personais')->assertUnauthorized();
+    $this->getJson('/api/admin/personais')->assertUnauthorized();
 });
 
 // CREATE
 it('superadmin can create a personal', function (): void {
     $admin = User::factory()->superadmin()->create();
 
-    $response = $this->actingAs($admin)->postJson('/api/personais', [
+    $response = $this->actingAs($admin)->postJson('/api/admin/personais', [
         'nome' => 'Novo Personal',
         'email' => 'novo@elite.com',
         'password' => 'secret123',
@@ -56,7 +57,7 @@ it('superadmin can create a personal', function (): void {
 it('returns validation errors for missing fields on create', function (): void {
     $admin = User::factory()->superadmin()->create();
 
-    $response = $this->actingAs($admin)->postJson('/api/personais', []);
+    $response = $this->actingAs($admin)->postJson('/api/admin/personais', []);
 
     $response->assertUnprocessable()
         ->assertJsonValidationErrors(['nome', 'email', 'password', 'telefone']);
@@ -66,7 +67,7 @@ it('returns validation error for duplicate email on create', function (): void {
     $admin = User::factory()->superadmin()->create();
     User::factory()->create(['email' => 'taken@elite.com']);
 
-    $response = $this->actingAs($admin)->postJson('/api/personais', [
+    $response = $this->actingAs($admin)->postJson('/api/admin/personais', [
         'nome' => 'Test',
         'email' => 'taken@elite.com',
         'password' => 'secret123',
@@ -80,7 +81,7 @@ it('returns validation error for duplicate email on create', function (): void {
 it('non-superadmin cannot create personal', function (): void {
     $user = User::factory()->create(['role' => Role::Aluno]);
 
-    $this->actingAs($user)->postJson('/api/personais', [
+    $this->actingAs($user)->postJson('/api/admin/personais', [
         'nome' => 'Test',
         'email' => 'test@elite.com',
         'password' => 'secret123',
@@ -89,21 +90,31 @@ it('non-superadmin cannot create personal', function (): void {
 });
 
 // SHOW
-it('superadmin can view a personal', function (): void {
+it('superadmin can view a personal with embedded alunos', function (): void {
     $admin = User::factory()->superadmin()->create();
     $personal = Personal::factory()->create();
+    $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
+    $treino = Treino::query()->where('code', 'A')->first();
 
-    $response = $this->actingAs($admin)->getJson("/api/personais/{$personal->id}");
+    $aluno->treinos()->attach($treino->id, [
+        'personal_id' => $personal->id,
+        'assigned_at' => now(),
+    ]);
+
+    $response = $this->actingAs($admin)->getJson("/api/admin/personais/{$personal->id}");
 
     $response->assertOk()
         ->assertJsonPath('nome', $personal->user->name)
-        ->assertJsonPath('email', $personal->user->email);
+        ->assertJsonPath('email', $personal->user->email)
+        ->assertJsonCount(1, 'alunos')
+        ->assertJsonPath('alunos.0.nome', $aluno->user->name)
+        ->assertJsonPath('alunos.0.treinos.0.codigo', 'A');
 });
 
 it('returns 404 for non-existent personal', function (): void {
     $admin = User::factory()->superadmin()->create();
 
-    $this->actingAs($admin)->getJson('/api/personais/999')->assertNotFound();
+    $this->actingAs($admin)->getJson('/api/admin/personais/999')->assertNotFound();
 });
 
 // UPDATE
@@ -111,7 +122,7 @@ it('superadmin can update a personal', function (): void {
     $admin = User::factory()->superadmin()->create();
     $personal = Personal::factory()->create();
 
-    $response = $this->actingAs($admin)->putJson("/api/personais/{$personal->id}", [
+    $response = $this->actingAs($admin)->putJson("/api/admin/personais/{$personal->id}", [
         'nome' => 'Updated Name',
         'email' => $personal->user->email,
         'telefone' => '(11) 88888-8888',
@@ -127,7 +138,7 @@ it('returns validation error for duplicate email on update', function (): void {
     User::factory()->create(['email' => 'other@elite.com']);
     $personal = Personal::factory()->create();
 
-    $response = $this->actingAs($admin)->putJson("/api/personais/{$personal->id}", [
+    $response = $this->actingAs($admin)->putJson("/api/admin/personais/{$personal->id}", [
         'nome' => 'Test',
         'email' => 'other@elite.com',
         'telefone' => '(11) 99999-0000',
@@ -143,7 +154,7 @@ it('superadmin can delete a personal', function (): void {
     $personal = Personal::factory()->create();
     $userId = $personal->user_id;
 
-    $this->actingAs($admin)->deleteJson("/api/personais/{$personal->id}")
+    $this->actingAs($admin)->deleteJson("/api/admin/personais/{$personal->id}")
         ->assertNoContent();
 
     $this->assertDatabaseMissing('personais', ['id' => $personal->id]);
@@ -154,7 +165,7 @@ it('non-superadmin cannot delete personal', function (): void {
     $user = User::factory()->create(['role' => Role::Aluno]);
     $personal = Personal::factory()->create();
 
-    $this->actingAs($user)->deleteJson("/api/personais/{$personal->id}")
+    $this->actingAs($user)->deleteJson("/api/admin/personais/{$personal->id}")
         ->assertForbidden();
 });
 
@@ -164,7 +175,7 @@ it('superadmin can list students of a personal', function (): void {
     $personal = Personal::factory()->create();
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
 
-    $response = $this->actingAs($admin)->getJson("/api/personais/{$personal->id}/alunos");
+    $response = $this->actingAs($admin)->getJson("/api/admin/personais/{$personal->id}/alunos");
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
@@ -175,6 +186,6 @@ it('non-superadmin cannot list personal alunos', function (): void {
     $user = User::factory()->create(['role' => Role::Aluno]);
     $personal = Personal::factory()->create();
 
-    $this->actingAs($user)->getJson("/api/personais/{$personal->id}/alunos")
+    $this->actingAs($user)->getJson("/api/admin/personais/{$personal->id}/alunos")
         ->assertForbidden();
 });

@@ -114,9 +114,7 @@ describe("Login page", () => {
 		await user.click(screen.getByRole("button", { name: "Entrar" }));
 
 		await waitFor(() => {
-			expect(
-				screen.getByText("Credenciais invalidas."),
-			).toBeInTheDocument();
+			expect(screen.getByText("Credenciais invalidas.")).toBeInTheDocument();
 		});
 	});
 

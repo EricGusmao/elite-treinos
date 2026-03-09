@@ -16,7 +16,7 @@ import type { Route } from "./+types/index";
 
 export async function clientLoader() {
 	const { data: meusTreinos } = await api.get<{ data: Treino[] }>(
-		"/api/meus-treinos",
+		"/api/aluno/meus-treinos",
 	);
 	return { meusTreinos };
 }

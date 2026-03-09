@@ -9,21 +9,11 @@ use App\Http\Resources\TreinoResource;
 use App\Models\Aluno;
 use App\Models\Treino;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
 
 final class AlunoTreinoController extends Controller
 {
-    public function index(Aluno $aluno): AnonymousResourceCollection
-    {
-        Gate::authorize('manageTreinos', $aluno);
-
-        $treinos = $aluno->treinos()->with('exercicios')->get();
-
-        return TreinoResource::collection($treinos);
-    }
-
     public function store(AssignTreinoRequest $request, Aluno $aluno): JsonResponse
     {
         Gate::authorize('manageTreinos', $aluno);

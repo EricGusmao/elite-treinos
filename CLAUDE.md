@@ -81,31 +81,6 @@ vendor/bin/pint --dirty --format agent    # format modified PHP files (MUST run 
 - **Exercicios**: order, name, sets, reps/time, notes (optional)
 - **Treinos atribuidos**: aluno_id, treino_id, personal_id, assigned_at
 
-## API Endpoints
-
-### Auth
-- `POST /api/login` — session-based login, returns user profile (cookie auth)
-- `POST /api/logout` — invalidate session
-- `GET /api/me` — current user info + role
-
-### Superadmin
-- `GET|POST /api/personais` — list/create personal trainers
-- `GET|PUT|DELETE /api/personais/{id}` — view/update/delete personal
-- `GET /api/personais/{id}/alunos` — list students of a personal (read-only)
-
-### Personal
-- `GET|POST /api/alunos` — list/create own students
-- `GET|PUT|DELETE /api/alunos/{id}` — view/update/delete student
-- `POST /api/alunos/{id}/treinos` — assign workout
-- `DELETE /api/alunos/{id}/treinos/{treinoId}` — remove workout
-- `GET /api/alunos/{id}/treinos` — list student's workouts
-
-### Student
-- `GET /api/meus-treinos` — list own workouts
-- `GET /api/meus-treinos/{id}` — workout detail with exercises
-
-### Shared
-- `GET /api/treinos` — list workout templates
 
 ## TDD Workflow (MANDATORY)
 

@@ -28,7 +28,7 @@ export type Aluno = {
 	dataNascimento: string | null;
 	observacoes: string | null;
 	personalId: number;
-	treinos: string[];
+	treinos: Treino[];
 };
 
 export type Personal = {
@@ -37,6 +37,7 @@ export type Personal = {
 	email: string;
 	telefone: string | null;
 	cref: string | null;
+	alunos?: Aluno[];
 };
 
 export type ApiErrors = Record<string, string[]>;

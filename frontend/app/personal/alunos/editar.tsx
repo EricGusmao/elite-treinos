@@ -17,7 +17,7 @@ import { ValidationError, api } from "~/lib/api";
 import type { Route } from "./+types/editar";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	const aluno = await api.get<Aluno>(`/api/alunos/${params.id}`);
+	const aluno = await api.get<Aluno>(`/api/personal/alunos/${params.id}`);
 	return { aluno };
 }
 
@@ -34,7 +34,7 @@ export async function clientAction({
 	};
 
 	try {
-		await api.put(`/api/alunos/${params.id}`, data);
+		await api.put(`/api/personal/alunos/${params.id}`, data);
 		return redirect(`/personal/alunos/${params.id}`);
 	} catch (err) {
 		if (err instanceof ValidationError) {

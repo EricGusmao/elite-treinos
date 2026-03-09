@@ -22,7 +22,9 @@ import { api } from "~/lib/api";
 import type { Route } from "./+types/index";
 
 export async function clientLoader() {
-	const { data: meusAlunos } = await api.get<{ data: Aluno[] }>("/api/alunos");
+	const { data: meusAlunos } = await api.get<{ data: Aluno[] }>(
+		"/api/personal/alunos",
+	);
 	return { meusAlunos };
 }
 
@@ -62,8 +64,8 @@ export default function AlunosIndex({ loaderData }: Route.ComponentProps) {
 								<div className="flex gap-1.5">
 									{aluno.treinos.length > 0 ? (
 										aluno.treinos.map((t) => (
-											<Badge key={t} color={treinoBadgeColor[t]}>
-												Treino {t}
+											<Badge key={t.codigo} color={treinoBadgeColor[t.codigo]}>
+												Treino {t.codigo}
 											</Badge>
 										))
 									) : (

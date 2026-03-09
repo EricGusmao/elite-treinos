@@ -18,7 +18,7 @@ it('student can list their assigned workouts', function (): void {
         'assigned_at' => now(),
     ]);
 
-    $response = $this->actingAs($aluno->user)->getJson('/api/meus-treinos');
+    $response = $this->actingAs($aluno->user)->getJson('/api/aluno/meus-treinos');
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
@@ -29,11 +29,11 @@ it('student can list their assigned workouts', function (): void {
 it('non-student cannot access meus-treinos', function (): void {
     $user = User::factory()->superadmin()->create();
 
-    $this->actingAs($user)->getJson('/api/meus-treinos')->assertForbidden();
+    $this->actingAs($user)->getJson('/api/aluno/meus-treinos')->assertForbidden();
 });
 
 it('unauthenticated cannot access meus-treinos', function (): void {
-    $this->getJson('/api/meus-treinos')->assertUnauthorized();
+    $this->getJson('/api/aluno/meus-treinos')->assertUnauthorized();
 });
 
 // SHOW
@@ -47,7 +47,7 @@ it('student can view workout detail with exercises', function (): void {
         'assigned_at' => now(),
     ]);
 
-    $response = $this->actingAs($aluno->user)->getJson("/api/meus-treinos/{$treino->id}");
+    $response = $this->actingAs($aluno->user)->getJson("/api/aluno/meus-treinos/{$treino->id}");
 
     $response->assertOk()
         ->assertJsonPath('codigo', 'A')
@@ -59,6 +59,6 @@ it('student cannot view unassigned workout', function (): void {
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
     $treino = Treino::query()->where('code', 'A')->first();
 
-    $this->actingAs($aluno->user)->getJson("/api/meus-treinos/{$treino->id}")
+    $this->actingAs($aluno->user)->getJson("/api/aluno/meus-treinos/{$treino->id}")
         ->assertNotFound();
 });

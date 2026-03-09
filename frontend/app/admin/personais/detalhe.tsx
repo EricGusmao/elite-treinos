@@ -17,25 +17,23 @@ import {
 } from "components/table";
 import { redirect, useFetcher } from "react-router";
 import { treinoBadgeColor } from "~/data/types";
-import type { Aluno, Personal } from "~/data/types";
+import type { Personal } from "~/data/types";
 import { api } from "~/lib/api";
 import type { Route } from "./+types/detalhe";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	const personal = await api.get<Personal>(`/api/personais/${params.id}`);
-	const { data: alunosDoPersonal } = await api.get<{ data: Aluno[] }>(
-		`/api/personais/${params.id}/alunos`,
-	);
-	return { personal, alunosDoPersonal };
+	const personal = await api.get<Personal>(`/api/admin/personais/${params.id}`);
+	return { personal };
 }
 
 export async function clientAction({ params }: Route.ClientActionArgs) {
-	await api.del(`/api/personais/${params.id}`);
+	await api.del(`/api/admin/personais/${params.id}`);
 	return redirect("/admin/personais");
 }
 
 export default function PersonalDetalhe({ loaderData }: Route.ComponentProps) {
-	const { personal, alunosDoPersonal } = loaderData;
+	const { personal } = loaderData;
+	const alunosDoPersonal = personal.alunos ?? [];
 	const fetcher = useFetcher();
 	const deleting = fetcher.state !== "idle";
 
@@ -104,8 +102,11 @@ export default function PersonalDetalhe({ loaderData }: Route.ComponentProps) {
 									<div className="flex gap-1.5">
 										{aluno.treinos.length > 0 ? (
 											aluno.treinos.map((t) => (
-												<Badge key={t} color={treinoBadgeColor[t]}>
-													Treino {t}
+												<Badge
+													key={t.codigo}
+													color={treinoBadgeColor[t.codigo]}
+												>
+													Treino {t.codigo}
 												</Badge>
 											))
 										) : (

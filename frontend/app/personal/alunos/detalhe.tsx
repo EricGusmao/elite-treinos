@@ -32,12 +32,8 @@ import { ValidationError, api } from "~/lib/api";
 import type { Route } from "./+types/detalhe";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	const [aluno, { data: treinosAtribuidos }] = await Promise.all([
-		api.get<Aluno>(`/api/alunos/${params.id}`),
-		api.get<{ data: Treino[] }>(`/api/alunos/${params.id}/treinos`),
-	]);
-
-	return { aluno, treinosAtribuidos };
+	const aluno = await api.get<Aluno>(`/api/personal/alunos/${params.id}`);
+	return { aluno };
 }
 
 export async function clientAction({
@@ -48,14 +44,14 @@ export async function clientAction({
 	const intent = formData.get("intent");
 
 	if (intent === "delete") {
-		await api.del(`/api/alunos/${params.id}`);
+		await api.del(`/api/personal/alunos/${params.id}`);
 		return redirect("/personal/alunos");
 	}
 
 	if (intent === "assign") {
 		const treinoId = formData.get("treino_id");
 		try {
-			await api.post(`/api/alunos/${params.id}/treinos`, {
+			await api.post(`/api/personal/alunos/${params.id}/treinos`, {
 				treino_id: Number(treinoId),
 			});
 			return { ok: true };
@@ -73,7 +69,7 @@ export async function clientAction({
 
 	if (intent === "remove") {
 		const treinoId = formData.get("treino_id");
-		await api.del(`/api/alunos/${params.id}/treinos/${treinoId}`);
+		await api.del(`/api/personal/alunos/${params.id}/treinos/${treinoId}`);
 		return { ok: true };
 	}
 
@@ -81,7 +77,8 @@ export async function clientAction({
 }
 
 export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
-	const { aluno, treinosAtribuidos } = loaderData;
+	const { aluno } = loaderData;
+	const treinosAtribuidos = aluno.treinos;
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
 	const [treinosDisponiveis, setTreinosDisponiveis] = useState<Treino[]>([]);
@@ -161,7 +158,7 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 						);
 						setTreinosDisponiveis(
 							todosTreinos.filter(
-								(t) => !aluno.treinos.includes(t.codigo),
+								(t) => !aluno.treinos.some((at) => at.codigo === t.codigo),
 							),
 						);
 						setIsDialogOpen(true);

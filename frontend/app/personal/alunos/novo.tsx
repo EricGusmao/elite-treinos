@@ -27,7 +27,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 	};
 
 	try {
-		const aluno = await api.post<Aluno>("/api/alunos", data);
+		const aluno = await api.post<Aluno>("/api/personal/alunos", data);
 		return redirect(`/personal/alunos/${aluno.id}`);
 	} catch (err) {
 		if (err instanceof ValidationError) {

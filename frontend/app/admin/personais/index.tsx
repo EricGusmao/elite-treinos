@@ -22,7 +22,7 @@ import type { Route } from "./+types/index";
 
 export async function clientLoader() {
 	const { data: personais } = await api.get<{ data: Personal[] }>(
-		"/api/personais",
+		"/api/admin/personais",
 	);
 	return { personais };
 }

@@ -15,19 +15,24 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/treinos', [TreinoController::class, 'index']);
 
     // Superadmin
-    Route::apiResource('personais', PersonalController::class)
-        ->parameters(['personais' => 'personal']);
-    Route::get('/personais/{personal}/alunos', action: [PersonalAlunoController::class, 'index']);
+    Route::prefix('admin')->group(function (): void {
+        Route::apiResource('personais', PersonalController::class)
+            ->parameters(['personais' => 'personal']);
+        Route::get('/personais/{personal}/alunos', [PersonalAlunoController::class, 'index']);
+    });
 
     // Personal
-    Route::apiResource('alunos', AlunoController::class);
-    Route::get('/alunos/{aluno}/treinos', [AlunoTreinoController::class, 'index']);
-    Route::post('/alunos/{aluno}/treinos', [AlunoTreinoController::class, 'store']);
-    Route::delete('/alunos/{aluno}/treinos/{treino}', [AlunoTreinoController::class, 'destroy']);
+    Route::prefix('personal')->group(function (): void {
+        Route::apiResource('alunos', AlunoController::class);
+        Route::post('/alunos/{aluno}/treinos', [AlunoTreinoController::class, 'store']);
+        Route::delete('/alunos/{aluno}/treinos/{treino}', [AlunoTreinoController::class, 'destroy']);
+    });
 
     // Aluno
-    Route::get('/meus-treinos', [MeuTreinoController::class, 'index']);
-    Route::get('/meus-treinos/{treino}', [MeuTreinoController::class, 'show']);
+    Route::prefix('aluno')->group(function (): void {
+        Route::get('/meus-treinos', [MeuTreinoController::class, 'index']);
+        Route::get('/meus-treinos/{treino}', [MeuTreinoController::class, 'show']);
+    });
 
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);

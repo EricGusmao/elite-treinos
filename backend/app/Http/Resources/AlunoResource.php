@@ -22,7 +22,7 @@ final class AlunoResource extends JsonResource
             'dataNascimento' => $this->birth_date?->toDateString(),
             'observacoes' => $this->notes,
             'personalId' => $this->personal_id,
-            'treinos' => $this->treinos->pluck('code')->all(),
+            'treinos' => TreinoResource::collection($this->whenLoaded('treinos')),
         ];
     }
 }
