@@ -5,6 +5,10 @@ declare(strict_types=1);
 use App\Enums\Role;
 use App\Models\User;
 
+beforeEach(function (): void {
+    $this->withHeader('Origin', config('sanctum.stateful')[0]);
+});
+
 it('returns user on valid credentials', function (): void {
     $user = User::factory()->create([
         'password' => bcrypt('secret123'),

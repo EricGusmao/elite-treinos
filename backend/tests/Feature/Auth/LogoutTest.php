@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use App\Models\User;
 
+beforeEach(function (): void {
+    $this->withHeader('Origin', config('sanctum.stateful')[0]);
+});
+
 it('logs out and invalidates session', function (): void {
     User::factory()->create([
         'email' => 'test@test.com',
@@ -16,6 +20,8 @@ it('logs out and invalidates session', function (): void {
     ])->assertOk();
 
     $this->postJson('/api/logout')->assertNoContent();
+
+    $this->app['auth']->forgetGuards();
 
     $this->getJson('/api/me')->assertUnauthorized();
 });

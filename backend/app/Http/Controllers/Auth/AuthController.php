@@ -38,8 +38,6 @@ final class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        Auth::forgetGuards();
-
         return response()->noContent();
     }
 
