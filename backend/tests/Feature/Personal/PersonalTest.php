@@ -47,8 +47,8 @@ it('superadmin can create a personal', function (): void {
     $response->assertCreated()
         ->assertJsonPath('nome', 'Novo Personal')
         ->assertJsonPath('email', 'novo@elite.com')
-        ->assertJsonPath('telefone', '(11) 99999-9999')
-        ->assertJsonPath('cref', '123456-G/SP');
+        ->assertJsonMissingPath('telefone')
+        ->assertJsonMissingPath('cref');
 
     $this->assertDatabaseHas('users', [
         'email' => 'novo@elite.com',
@@ -129,7 +129,8 @@ it('superadmin can update a personal', function (): void {
 
     $response->assertOk()
         ->assertJsonPath('nome', 'Updated Name')
-        ->assertJsonPath('telefone', '(11) 88888-8888');
+        ->assertJsonMissingPath('telefone')
+        ->assertJsonMissingPath('cref');
 });
 
 it('returns validation error for duplicate email on update', function (): void {

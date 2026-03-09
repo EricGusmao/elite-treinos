@@ -8,7 +8,6 @@ use App\Http\Requests\StorePersonalRequest;
 use App\Http\Requests\UpdatePersonalRequest;
 use App\Http\Resources\PersonalDetailResource;
 use App\Http\Resources\PersonalListResource;
-use App\Http\Resources\PersonalResource;
 use App\Models\Personal;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -32,7 +31,7 @@ final class PersonalController extends Controller
 
         $personal = Personal::createWithUser($request->validated());
 
-        return response()->json(new PersonalResource($personal), 201);
+        return response()->json(new PersonalListResource($personal), 201);
     }
 
     public function show(Personal $personal): JsonResponse
@@ -50,7 +49,7 @@ final class PersonalController extends Controller
 
         $personal->updateWithUser($request->validated());
 
-        return response()->json(new PersonalResource($personal));
+        return response()->json(new PersonalListResource($personal));
     }
 
     public function destroy(Personal $personal): Response
