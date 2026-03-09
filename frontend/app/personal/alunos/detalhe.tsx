@@ -7,9 +7,17 @@ import {
 	DescriptionTerm,
 } from "components/description-list";
 import { Heading, Subheading } from "components/heading";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "components/table";
 import { Text } from "components/text";
-import { useState } from "react";
-import { redirect, useFetcher } from "react-router";
+import { useEffect, useState } from "react";
+import { Form, redirect, useFetcher, useNavigation } from "react-router";
 import { treinoBadgeColor } from "~/data/types";
 import type { Aluno, Treino } from "~/data/types";
 import { ValidationError, api } from "~/lib/api";
@@ -68,24 +76,23 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 	const { aluno, treinos } = loaderData;
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-	const deleteFetcher = useFetcher();
+	const navigation = useNavigation();
 	const assignFetcher = useFetcher();
 	const removeFetcher = useFetcher();
 
-	const deleting = deleteFetcher.state !== "idle";
+	const deleting = navigation.state !== "idle";
 	const limiteAtingido = aluno.treinos.length >= 2;
 
 	const treinosDisponiveis = treinos.filter(
 		(t) => !aluno.treinos.some((at) => at.codigo === t.codigo),
 	);
 
-	if (
-		isDialogOpen &&
-		assignFetcher.state === "idle" &&
-		assignFetcher.data?.ok
-	) {
-		setIsDialogOpen(false);
-	}
+	useEffect(() => {
+		if (assignFetcher.state === "idle" && assignFetcher.data?.ok) {
+			setIsDialogOpen(false);
+			assignFetcher.reset();
+		}
+	}, [assignFetcher.state, assignFetcher.data, assignFetcher.reset]);
 
 	return (
 		<>
@@ -102,17 +109,18 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 					<Button outline href={`/personal/alunos/${aluno.id}/editar`}>
 						Editar
 					</Button>
-					<Button
-						color="red"
-						disabled={deleting}
-						onClick={() => {
+					<Form
+						method="post"
+						onSubmit={(e) => {
 							if (!confirm("Tem certeza que deseja excluir este aluno?"))
-								return;
-							deleteFetcher.submit({ intent: "delete" }, { method: "post" });
+								e.preventDefault();
 						}}
 					>
-						{deleting ? "Excluindo..." : "Excluir"}
-					</Button>
+						<input type="hidden" name="intent" value="delete" />
+						<Button type="submit" color="red" disabled={deleting}>
+							{deleting ? "Excluindo..." : "Excluir"}
+						</Button>
+					</Form>
 				</div>
 			</div>
 
@@ -150,7 +158,48 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 				</Text>
 			)}
 
-			<TreinosTable treinos={aluno.treinos} removeFetcher={removeFetcher} />
+			{aluno.treinos.length === 0 ? (
+				<Text className="mt-4">Nenhum treino atribuido.</Text>
+			) : (
+				<Table className="mt-4">
+					<TableHead>
+						<TableRow>
+							<TableHeader>Codigo</TableHeader>
+							<TableHeader>Nome</TableHeader>
+							<TableHeader>Objetivo</TableHeader>
+							<TableHeader className="w-0">
+								<span className="sr-only">Acoes</span>
+							</TableHeader>
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{aluno.treinos.map((treino) => (
+							<TableRow key={treino.id}>
+								<TableCell>
+									<Badge color={treinoBadgeColor[treino.codigo]}>
+										Treino {treino.codigo}
+									</Badge>
+								</TableCell>
+								<TableCell className="font-medium">{treino.nome}</TableCell>
+								<TableCell>{treino.objetivo}</TableCell>
+								<TableCell>
+									<Button
+										plain
+										onClick={() =>
+											removeFetcher.submit(
+												{ intent: "remove", treino_id: String(treino.id) },
+												{ method: "post" },
+											)
+										}
+									>
+										Remover
+									</Button>
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			)}
 
 			<AssignTreinoDialog
 				open={isDialogOpen}
@@ -159,61 +208,5 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 				fetcher={assignFetcher}
 			/>
 		</>
-	);
-}
-
-function TreinosTable({
-	treinos,
-	removeFetcher,
-}: {
-	treinos: Treino[];
-	removeFetcher: ReturnType<typeof useFetcher>;
-}) {
-	if (treinos.length === 0) {
-		return <Text className="mt-4">Nenhum treino atribuido.</Text>;
-	}
-
-	return (
-		<table className="mt-4 w-full text-left text-sm">
-			<thead>
-				<tr className="border-b border-zinc-950/10 dark:border-white/10">
-					<th className="py-2 font-medium">Codigo</th>
-					<th className="py-2 font-medium">Nome</th>
-					<th className="py-2 font-medium">Objetivo</th>
-					<th className="w-0 py-2">
-						<span className="sr-only">Acoes</span>
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				{treinos.map((treino) => (
-					<tr
-						key={treino.id}
-						className="border-b border-zinc-950/5 dark:border-white/5"
-					>
-						<td className="py-2">
-							<Badge color={treinoBadgeColor[treino.codigo]}>
-								Treino {treino.codigo}
-							</Badge>
-						</td>
-						<td className="py-2 font-medium">{treino.nome}</td>
-						<td className="py-2">{treino.objetivo}</td>
-						<td className="py-2">
-							<Button
-								plain
-								onClick={() =>
-									removeFetcher.submit(
-										{ intent: "remove", treino_id: String(treino.id) },
-										{ method: "post" },
-									)
-								}
-							>
-								Remover
-							</Button>
-						</td>
-					</tr>
-				))}
-			</tbody>
-		</table>
 	);
 }
