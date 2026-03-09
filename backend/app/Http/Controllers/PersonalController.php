@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePersonalRequest;
 use App\Http\Requests\UpdatePersonalRequest;
+use App\Http\Resources\PersonalListResource;
 use App\Http\Resources\PersonalResource;
 use App\Models\Personal;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +22,7 @@ final class PersonalController extends Controller
 
         $personais = Personal::query()->with('user')->get();
 
-        return PersonalResource::collection($personais);
+        return PersonalListResource::collection($personais);
     }
 
     public function store(StorePersonalRequest $request): JsonResponse
@@ -37,7 +38,7 @@ final class PersonalController extends Controller
     {
         Gate::authorize('view', $personal);
 
-        $personal->load(['user', 'alunos.user', 'alunos.treinos']);
+        $personal->load(['user', 'alunos.user']);
 
         return response()->json(new PersonalResource($personal));
     }

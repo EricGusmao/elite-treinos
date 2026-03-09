@@ -31,13 +31,25 @@ export type Aluno = {
 	treinos: Treino[];
 };
 
+export type AlunoSummary = {
+	id: number;
+	nome: string;
+	email: string;
+};
+
+export type PersonalSummary = {
+	id: number;
+	nome: string;
+	email: string;
+};
+
 export type Personal = {
 	id: number;
 	nome: string;
 	email: string;
 	telefone: string | null;
 	cref: string | null;
-	alunos?: Aluno[];
+	alunos?: AlunoSummary[];
 };
 
 export type ApiErrors = Record<string, string[]>;

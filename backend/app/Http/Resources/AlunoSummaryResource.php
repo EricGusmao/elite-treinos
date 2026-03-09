@@ -7,8 +7,8 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin \App\Models\Personal */
-final class PersonalResource extends JsonResource
+/** @mixin \App\Models\Aluno */
+final class AlunoSummaryResource extends JsonResource
 {
     /**
      * @return array<string, mixed>
@@ -19,9 +19,6 @@ final class PersonalResource extends JsonResource
             'id' => $this->id,
             'nome' => $this->user->name,
             'email' => $this->user->email,
-            'telefone' => $this->phone,
-            'cref' => $this->cref,
-            'alunos' => AlunoSummaryResource::collection($this->whenLoaded('alunos')),
         ];
     }
 }

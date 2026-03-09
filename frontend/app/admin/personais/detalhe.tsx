@@ -1,5 +1,4 @@
 import { ChevronLeftIcon } from "@heroicons/react/16/solid";
-import { Badge } from "components/badge";
 import { Button } from "components/button";
 import {
 	DescriptionDetails,
@@ -15,8 +14,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "components/table";
-import { redirect, useFetcher } from "react-router";
-import { treinoBadgeColor } from "~/data/types";
+import { Form, redirect, useNavigation } from "react-router";
 import type { Personal } from "~/data/types";
 import { api } from "~/lib/api";
 import type { Route } from "./+types/detalhe";
@@ -34,8 +32,8 @@ export async function clientAction({ params }: Route.ClientActionArgs) {
 export default function PersonalDetalhe({ loaderData }: Route.ComponentProps) {
 	const { personal } = loaderData;
 	const alunosDoPersonal = personal.alunos ?? [];
-	const fetcher = useFetcher();
-	const deleting = fetcher.state !== "idle";
+	const navigation = useNavigation();
+	const deleting = navigation.state !== "idle";
 
 	return (
 		<>
@@ -52,17 +50,17 @@ export default function PersonalDetalhe({ loaderData }: Route.ComponentProps) {
 					<Button outline href={`/admin/personais/${personal.id}/editar`}>
 						Editar
 					</Button>
-					<Button
-						color="red"
-						disabled={deleting}
-						onClick={() => {
+					<Form
+						method="post"
+						onSubmit={(e) => {
 							if (!confirm("Tem certeza que deseja excluir este personal?"))
-								return;
-							fetcher.submit(null, { method: "post" });
+								e.preventDefault();
 						}}
 					>
-						{deleting ? "Excluindo..." : "Excluir"}
-					</Button>
+						<Button type="submit" color="red" disabled={deleting}>
+							{deleting ? "Excluindo..." : "Excluir"}
+						</Button>
+					</Form>
 				</div>
 			</div>
 
@@ -90,7 +88,6 @@ export default function PersonalDetalhe({ loaderData }: Route.ComponentProps) {
 						<TableRow>
 							<TableHeader>Nome</TableHeader>
 							<TableHeader>Email</TableHeader>
-							<TableHeader>Treinos</TableHeader>
 						</TableRow>
 					</TableHead>
 					<TableBody>
@@ -98,22 +95,6 @@ export default function PersonalDetalhe({ loaderData }: Route.ComponentProps) {
 							<TableRow key={aluno.id}>
 								<TableCell className="font-medium">{aluno.nome}</TableCell>
 								<TableCell>{aluno.email}</TableCell>
-								<TableCell>
-									<div className="flex gap-1.5">
-										{aluno.treinos.length > 0 ? (
-											aluno.treinos.map((t) => (
-												<Badge
-													key={t.codigo}
-													color={treinoBadgeColor[t.codigo]}
-												>
-													Treino {t.codigo}
-												</Badge>
-											))
-										) : (
-											<span className="text-zinc-400">Nenhum</span>
-										)}
-									</div>
-								</TableCell>
 							</TableRow>
 						))}
 					</TableBody>

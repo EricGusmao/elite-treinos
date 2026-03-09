@@ -1,5 +1,4 @@
 import { EllipsisVerticalIcon } from "@heroicons/react/16/solid";
-import { Badge } from "components/badge";
 import { Button } from "components/button";
 import {
 	Dropdown,
@@ -16,12 +15,12 @@ import {
 	TableHeader,
 	TableRow,
 } from "components/table";
+import type { PersonalSummary } from "~/data/types";
 import { api } from "~/lib/api";
-import type { Personal } from "~/data/types";
 import type { Route } from "./+types/index";
 
 export async function clientLoader() {
-	const { data: personais } = await api.get<{ data: Personal[] }>(
+	const { data: personais } = await api.get<{ data: PersonalSummary[] }>(
 		"/api/admin/personais",
 	);
 	return { personais };
@@ -42,8 +41,6 @@ export default function PersonaisIndex({ loaderData }: Route.ComponentProps) {
 					<TableRow>
 						<TableHeader>Nome</TableHeader>
 						<TableHeader>Email</TableHeader>
-						<TableHeader>Telefone</TableHeader>
-						<TableHeader>CREF</TableHeader>
 						<TableHeader className="w-0">
 							<span className="sr-only">Acoes</span>
 						</TableHeader>
@@ -57,14 +54,6 @@ export default function PersonaisIndex({ loaderData }: Route.ComponentProps) {
 						>
 							<TableCell className="font-medium">{personal.nome}</TableCell>
 							<TableCell>{personal.email}</TableCell>
-							<TableCell>{personal.telefone}</TableCell>
-							<TableCell>
-								{personal.cref ? (
-									<Badge color="blue">{personal.cref}</Badge>
-								) : (
-									<span className="text-zinc-400">—</span>
-								)}
-							</TableCell>
 							<TableCell>
 								<div className="-mx-3 -my-1.5 sm:-mx-2.5">
 									<Dropdown>

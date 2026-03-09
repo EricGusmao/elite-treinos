@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /** @mixin \App\Models\Personal */
-final class PersonalResource extends JsonResource
+final class PersonalListResource extends JsonResource
 {
     /**
      * @return array<string, mixed>
@@ -19,9 +19,6 @@ final class PersonalResource extends JsonResource
             'id' => $this->id,
             'nome' => $this->user->name,
             'email' => $this->user->email,
-            'telefone' => $this->phone,
-            'cref' => $this->cref,
-            'alunos' => AlunoSummaryResource::collection($this->whenLoaded('alunos')),
         ];
     }
 }

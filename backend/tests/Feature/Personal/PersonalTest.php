@@ -5,11 +5,10 @@ declare(strict_types=1);
 use App\Enums\Role;
 use App\Models\Aluno;
 use App\Models\Personal;
-use App\Models\Treino;
 use App\Models\User;
 
 // LIST
-it('superadmin can list personais', function (): void {
+it('superadmin can list personais with only nome and email', function (): void {
     $admin = User::factory()->superadmin()->create();
     $personal = Personal::factory()->create();
 
@@ -17,7 +16,10 @@ it('superadmin can list personais', function (): void {
 
     $response->assertOk()
         ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.nome', $personal->user->name);
+        ->assertJsonPath('data.0.nome', $personal->user->name)
+        ->assertJsonPath('data.0.email', $personal->user->email)
+        ->assertJsonMissingPath('data.0.telefone')
+        ->assertJsonMissingPath('data.0.cref');
 });
 
 it('non-superadmin cannot list personais', function (): void {
@@ -90,25 +92,22 @@ it('non-superadmin cannot create personal', function (): void {
 });
 
 // SHOW
-it('superadmin can view a personal with embedded alunos', function (): void {
+it('superadmin can view a personal with embedded alunos summary', function (): void {
     $admin = User::factory()->superadmin()->create();
     $personal = Personal::factory()->create();
     $aluno = Aluno::factory()->create(['personal_id' => $personal->id]);
-    $treino = Treino::query()->where('code', 'A')->first();
-
-    $aluno->treinos()->attach($treino->id, [
-        'personal_id' => $personal->id,
-        'assigned_at' => now(),
-    ]);
 
     $response = $this->actingAs($admin)->getJson("/api/admin/personais/{$personal->id}");
 
     $response->assertOk()
         ->assertJsonPath('nome', $personal->user->name)
         ->assertJsonPath('email', $personal->user->email)
+        ->assertJsonPath('telefone', $personal->phone)
+        ->assertJsonPath('cref', $personal->cref)
         ->assertJsonCount(1, 'alunos')
         ->assertJsonPath('alunos.0.nome', $aluno->user->name)
-        ->assertJsonPath('alunos.0.treinos.0.codigo', 'A');
+        ->assertJsonPath('alunos.0.email', $aluno->user->email)
+        ->assertJsonMissingPath('alunos.0.treinos');
 });
 
 it('returns 404 for non-existent personal', function (): void {
