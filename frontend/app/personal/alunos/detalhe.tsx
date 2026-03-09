@@ -32,18 +32,12 @@ import { ValidationError, api } from "~/lib/api";
 import type { Route } from "./+types/detalhe";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	const [aluno, { data: treinosAtribuidos }, { data: todosTreinos }] =
-		await Promise.all([
-			api.get<Aluno>(`/api/alunos/${params.id}`),
-			api.get<{ data: Treino[] }>(`/api/alunos/${params.id}/treinos`),
-			api.get<{ data: Treino[] }>("/api/treinos"),
-		]);
+	const [aluno, { data: treinosAtribuidos }] = await Promise.all([
+		api.get<Aluno>(`/api/alunos/${params.id}`),
+		api.get<{ data: Treino[] }>(`/api/alunos/${params.id}/treinos`),
+	]);
 
-	const treinosDisponiveis = todosTreinos.filter(
-		(t) => !aluno.treinos.includes(t.codigo),
-	);
-
-	return { aluno, treinosAtribuidos, treinosDisponiveis };
+	return { aluno, treinosAtribuidos };
 }
 
 export async function clientAction({
@@ -87,9 +81,10 @@ export async function clientAction({
 }
 
 export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
-	const { aluno, treinosAtribuidos, treinosDisponiveis } = loaderData;
+	const { aluno, treinosAtribuidos } = loaderData;
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [dialogError, setDialogError] = useState<string | null>(null);
+	const [treinosDisponiveis, setTreinosDisponiveis] = useState<Treino[]>([]);
 
 	const deleteFetcher = useFetcher();
 	const assignFetcher = useFetcher();
@@ -159,8 +154,16 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 				<Subheading>Treinos Atribuidos</Subheading>
 				<Button
 					outline
-					onClick={() => {
+					onClick={async () => {
 						setDialogError(null);
+						const { data: todosTreinos } = await api.get<{ data: Treino[] }>(
+							"/api/treinos",
+						);
+						setTreinosDisponiveis(
+							todosTreinos.filter(
+								(t) => !aluno.treinos.includes(t.codigo),
+							),
+						);
 						setIsDialogOpen(true);
 					}}
 					disabled={limiteAtingido}
