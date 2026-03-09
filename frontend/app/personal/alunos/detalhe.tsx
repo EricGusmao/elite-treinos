@@ -27,7 +27,7 @@ import type { Route } from "./+types/detalhe";
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 	const [aluno, { data: treinos }] = await Promise.all([
 		api.get<Aluno>(`/api/personal/alunos/${params.id}`),
-		api.get<{ data: TreinoSummary[] }>("/api/treinos"),
+		api.get<{ data: TreinoSummary[] }>("/api/personal/treinos"),
 	]);
 	return { aluno, treinos };
 }

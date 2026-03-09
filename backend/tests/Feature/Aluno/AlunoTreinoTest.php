@@ -67,7 +67,7 @@ it('cannot assign workout to another personals student', function (): void {
 
     $this->actingAs($personal->user)->postJson("/api/personal/alunos/{$otherAluno->id}/treinos", [
         'treino_id' => $treino->id,
-    ])->assertForbidden();
+    ])->assertNotFound();
 });
 
 it('returns validation error for invalid treino_id', function (): void {
@@ -111,5 +111,5 @@ it('cannot remove workout from another personals student', function (): void {
     ]);
 
     $this->actingAs($personal->user)->deleteJson("/api/personal/alunos/{$otherAluno->id}/treinos/{$treino->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });

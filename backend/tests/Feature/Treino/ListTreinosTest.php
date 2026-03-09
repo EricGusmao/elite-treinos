@@ -10,7 +10,7 @@ use App\Models\User;
 it('returns all treinos as summaries without exercicios', function (): void {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->getJson('/api/treinos');
+    $response = $this->actingAs($user)->getJson('/api/personal/treinos');
 
     $response->assertOk()
         ->assertJsonCount(4, 'data')
@@ -20,7 +20,7 @@ it('returns all treinos as summaries without exercicios', function (): void {
 });
 
 it('returns 401 for unauthenticated request to list treinos', function (): void {
-    $this->getJson('/api/treinos')->assertUnauthorized();
+    $this->getJson('/api/personal/treinos')->assertUnauthorized();
 });
 
 // SHOW

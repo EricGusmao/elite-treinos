@@ -119,7 +119,7 @@ it('personal cannot view another personals student', function (): void {
     $otherAluno = Aluno::factory()->create(); // belongs to a different personal
 
     $this->actingAs($personal->user)->getJson("/api/personal/alunos/{$otherAluno->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });
 
 // UPDATE
@@ -145,7 +145,7 @@ it('personal cannot update another personals student', function (): void {
     $this->actingAs($personal->user)->putJson("/api/personal/alunos/{$otherAluno->id}", [
         'nome' => 'Updated',
         'email' => $otherAluno->user->email,
-    ])->assertForbidden();
+    ])->assertNotFound();
 });
 
 // DELETE
@@ -166,5 +166,5 @@ it('personal cannot delete another personals student', function (): void {
     $otherAluno = Aluno::factory()->create();
 
     $this->actingAs($personal->user)->deleteJson("/api/personal/alunos/{$otherAluno->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });

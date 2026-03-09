@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Models\Personal;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 final class PersonalPolicy
 {
@@ -14,9 +15,9 @@ final class PersonalPolicy
         return $user->isSuperadmin();
     }
 
-    public function view(User $user): bool
+    public function view(User $user, Personal $personal): Response
     {
-        return $user->isSuperadmin();
+        return $user->isSuperadmin() ? Response::allow() : Response::denyAsNotFound();
     }
 
     public function create(User $user): bool
@@ -24,18 +25,13 @@ final class PersonalPolicy
         return $user->isSuperadmin();
     }
 
-    public function update(User $user): bool
+    public function update(User $user, Personal $personal): Response
     {
-        return $user->isSuperadmin();
+        return $user->isSuperadmin() ? Response::allow() : Response::denyAsNotFound();
     }
 
-    public function delete(User $user): bool
+    public function delete(User $user, Personal $personal): Response
     {
-        return $user->isSuperadmin();
-    }
-
-    public function viewAlunos(User $user): bool
-    {
-        return $user->isSuperadmin();
+        return $user->isSuperadmin() ? Response::allow() : Response::denyAsNotFound();
     }
 }

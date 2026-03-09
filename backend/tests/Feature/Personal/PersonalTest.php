@@ -166,5 +166,5 @@ it('non-superadmin cannot delete personal', function (): void {
     $personal = Personal::factory()->create();
 
     $this->actingAs($user)->deleteJson("/api/admin/personais/{$personal->id}")
-        ->assertForbidden();
+        ->assertNotFound();
 });

@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Models\Aluno;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 final class AlunoPolicy
 {
@@ -14,7 +15,7 @@ final class AlunoPolicy
         return $user->isPersonal();
     }
 
-    public function view(User $user, Aluno $aluno): bool
+    public function view(User $user, Aluno $aluno): Response
     {
         return $this->ownsAluno($user, $aluno);
     }
@@ -24,23 +25,25 @@ final class AlunoPolicy
         return $user->isPersonal();
     }
 
-    public function update(User $user, Aluno $aluno): bool
+    public function update(User $user, Aluno $aluno): Response
     {
         return $this->ownsAluno($user, $aluno);
     }
 
-    public function delete(User $user, Aluno $aluno): bool
+    public function delete(User $user, Aluno $aluno): Response
     {
         return $this->ownsAluno($user, $aluno);
     }
 
-    public function manageTreinos(User $user, Aluno $aluno): bool
+    public function manageTreinos(User $user, Aluno $aluno): Response
     {
         return $this->ownsAluno($user, $aluno);
     }
 
-    private function ownsAluno(User $user, Aluno $aluno): bool
+    private function ownsAluno(User $user, Aluno $aluno): Response
     {
-        return $user->isPersonal() && $user->personal?->id === $aluno->personal_id;
+        return $user->isPersonal() && $user->personal?->id === $aluno->personal_id
+            ? Response::allow()
+            : Response::denyAsNotFound();
     }
 }
