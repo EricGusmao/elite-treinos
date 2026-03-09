@@ -6,34 +6,22 @@ import {
 	DescriptionList,
 	DescriptionTerm,
 } from "components/description-list";
-import {
-	Dialog,
-	DialogActions,
-	DialogBody,
-	DialogTitle,
-} from "components/dialog";
-import { ErrorMessage, Field, Label } from "components/fieldset";
 import { Heading, Subheading } from "components/heading";
-import { Select } from "components/select";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "components/table";
 import { Text } from "components/text";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { redirect, useFetcher } from "react-router";
 import { treinoBadgeColor } from "~/data/types";
 import type { Aluno, Treino } from "~/data/types";
 import { ValidationError, api } from "~/lib/api";
+import AssignTreinoDialog from "./assign-treino-dialog";
 import type { Route } from "./+types/detalhe";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-	const aluno = await api.get<Aluno>(`/api/personal/alunos/${params.id}`);
-	return { aluno };
+	const [aluno, { data: treinos }] = await Promise.all([
+		api.get<Aluno>(`/api/personal/alunos/${params.id}`),
+		api.get<{ data: Treino[] }>("/api/treinos"),
+	]);
+	return { aluno, treinos };
 }
 
 export async function clientAction({
@@ -77,11 +65,8 @@ export async function clientAction({
 }
 
 export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
-	const { aluno } = loaderData;
-	const treinosAtribuidos = aluno.treinos;
+	const { aluno, treinos } = loaderData;
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const [dialogError, setDialogError] = useState<string | null>(null);
-	const [treinosDisponiveis, setTreinosDisponiveis] = useState<Treino[]>([]);
 
 	const deleteFetcher = useFetcher();
 	const assignFetcher = useFetcher();
@@ -90,16 +75,17 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 	const deleting = deleteFetcher.state !== "idle";
 	const limiteAtingido = aluno.treinos.length >= 2;
 
-	useEffect(() => {
-		if (assignFetcher.state === "idle" && assignFetcher.data) {
-			if (assignFetcher.data.ok) {
-				setIsDialogOpen(false);
-				setDialogError(null);
-			} else if (assignFetcher.data.error) {
-				setDialogError(assignFetcher.data.error);
-			}
-		}
-	}, [assignFetcher.state, assignFetcher.data]);
+	const treinosDisponiveis = treinos.filter(
+		(t) => !aluno.treinos.some((at) => at.codigo === t.codigo),
+	);
+
+	if (
+		isDialogOpen &&
+		assignFetcher.state === "idle" &&
+		assignFetcher.data?.ok
+	) {
+		setIsDialogOpen(false);
+	}
 
 	return (
 		<>
@@ -151,18 +137,7 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 				<Subheading>Treinos Atribuidos</Subheading>
 				<Button
 					outline
-					onClick={async () => {
-						setDialogError(null);
-						const { data: todosTreinos } = await api.get<{ data: Treino[] }>(
-							"/api/treinos",
-						);
-						setTreinosDisponiveis(
-							todosTreinos.filter(
-								(t) => !aluno.treinos.some((at) => at.codigo === t.codigo),
-							),
-						);
-						setIsDialogOpen(true);
-					}}
+					onClick={() => setIsDialogOpen(true)}
 					disabled={limiteAtingido}
 				>
 					Atribuir Treino
@@ -175,78 +150,70 @@ export default function AlunoDetalhe({ loaderData }: Route.ComponentProps) {
 				</Text>
 			)}
 
-			{treinosAtribuidos.length === 0 ? (
-				<Text className="mt-4">Nenhum treino atribuido.</Text>
-			) : (
-				<Table className="mt-4">
-					<TableHead>
-						<TableRow>
-							<TableHeader>Codigo</TableHeader>
-							<TableHeader>Nome</TableHeader>
-							<TableHeader>Objetivo</TableHeader>
-							<TableHeader className="w-0">
-								<span className="sr-only">Acoes</span>
-							</TableHeader>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{treinosAtribuidos.map((treino) => (
-							<TableRow key={treino.id}>
-								<TableCell>
-									<Badge color={treinoBadgeColor[treino.codigo]}>
-										Treino {treino.codigo}
-									</Badge>
-								</TableCell>
-								<TableCell className="font-medium">{treino.nome}</TableCell>
-								<TableCell>{treino.objetivo}</TableCell>
-								<TableCell>
-									<Button
-										plain
-										onClick={() =>
-											removeFetcher.submit(
-												{ intent: "remove", treino_id: String(treino.id) },
-												{ method: "post" },
-											)
-										}
-									>
-										Remover
-									</Button>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			)}
+			<TreinosTable treinos={aluno.treinos} removeFetcher={removeFetcher} />
 
-			<Dialog open={isDialogOpen} onClose={setIsDialogOpen}>
-				<DialogTitle>Atribuir Treino</DialogTitle>
-				<assignFetcher.Form method="post">
-					<input type="hidden" name="intent" value="assign" />
-					<DialogBody>
-						{dialogError && (
-							<ErrorMessage className="mb-4">{dialogError}</ErrorMessage>
-						)}
-						<Field>
-							<Label>Selecione o treino</Label>
-							<Select name="treino_id">
-								{treinosDisponiveis.map((t) => (
-									<option key={t.id} value={t.id}>
-										Treino {t.codigo} — {t.nome}
-									</option>
-								))}
-							</Select>
-						</Field>
-					</DialogBody>
-					<DialogActions>
-						<Button plain onClick={() => setIsDialogOpen(false)}>
-							Cancelar
-						</Button>
-						<Button type="submit" disabled={assignFetcher.state !== "idle"}>
-							{assignFetcher.state !== "idle" ? "Atribuindo..." : "Atribuir"}
-						</Button>
-					</DialogActions>
-				</assignFetcher.Form>
-			</Dialog>
+			<AssignTreinoDialog
+				open={isDialogOpen}
+				onClose={setIsDialogOpen}
+				treinos={treinosDisponiveis}
+				fetcher={assignFetcher}
+			/>
 		</>
+	);
+}
+
+function TreinosTable({
+	treinos,
+	removeFetcher,
+}: {
+	treinos: Treino[];
+	removeFetcher: ReturnType<typeof useFetcher>;
+}) {
+	if (treinos.length === 0) {
+		return <Text className="mt-4">Nenhum treino atribuido.</Text>;
+	}
+
+	return (
+		<table className="mt-4 w-full text-left text-sm">
+			<thead>
+				<tr className="border-b border-zinc-950/10 dark:border-white/10">
+					<th className="py-2 font-medium">Codigo</th>
+					<th className="py-2 font-medium">Nome</th>
+					<th className="py-2 font-medium">Objetivo</th>
+					<th className="w-0 py-2">
+						<span className="sr-only">Acoes</span>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				{treinos.map((treino) => (
+					<tr
+						key={treino.id}
+						className="border-b border-zinc-950/5 dark:border-white/5"
+					>
+						<td className="py-2">
+							<Badge color={treinoBadgeColor[treino.codigo]}>
+								Treino {treino.codigo}
+							</Badge>
+						</td>
+						<td className="py-2 font-medium">{treino.nome}</td>
+						<td className="py-2">{treino.objetivo}</td>
+						<td className="py-2">
+							<Button
+								plain
+								onClick={() =>
+									removeFetcher.submit(
+										{ intent: "remove", treino_id: String(treino.id) },
+										{ method: "post" },
+									)
+								}
+							>
+								Remover
+							</Button>
+						</td>
+					</tr>
+				))}
+			</tbody>
+		</table>
 	);
 }

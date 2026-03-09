@@ -1,0 +1,7 @@
+import { redirect } from "react-router";
+import { api } from "~/lib/api";
+
+export async function clientAction() {
+	await api.post("/api/logout");
+	return redirect("/");
+}

@@ -1,7 +1,7 @@
 import {
-	HomeIcon,
 	ArrowRightStartOnRectangleIcon,
 	ClipboardDocumentListIcon,
+	HomeIcon,
 } from "@heroicons/react/20/solid";
 import { Avatar } from "components/avatar";
 import { Navbar, NavbarSpacer } from "components/navbar";
@@ -15,31 +15,19 @@ import {
 	SidebarSection,
 } from "components/sidebar";
 import { SidebarLayout } from "components/sidebar-layout";
-import { useEffect } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router";
-import { useAuth } from "~/lib/auth";
+import { Outlet, useFetcher, useLocation } from "react-router";
+import { getInitials, requireRole } from "~/lib/auth-utils";
+import type { Route } from "./+types/layout";
 
-function getInitials(name: string): string {
-	return name
-		.split(" ")
-		.map((w) => w[0])
-		.join("")
-		.slice(0, 2)
-		.toUpperCase();
+export async function clientLoader() {
+	const user = await requireRole("aluno");
+	return { user };
 }
 
-export default function AlunoLayout() {
+export default function AlunoLayout({ loaderData }: Route.ComponentProps) {
+	const { user } = loaderData;
 	const { pathname } = useLocation();
-	const { user, loading, logout } = useAuth();
-	const navigate = useNavigate();
-
-	useEffect(() => {
-		if (!loading && (!user || user.role !== "aluno")) {
-			navigate("/");
-		}
-	}, [user, loading, navigate]);
-
-	if (loading || !user) return null;
+	const logoutFetcher = useFetcher();
 
 	return (
 		<SidebarLayout
@@ -82,7 +70,10 @@ export default function AlunoLayout() {
 							<SidebarItem
 								onClick={(e: React.MouseEvent) => {
 									e.preventDefault();
-									logout();
+									logoutFetcher.submit(null, {
+										method: "post",
+										action: "/logout",
+									});
 								}}
 							>
 								<ArrowRightStartOnRectangleIcon />

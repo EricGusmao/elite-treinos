@@ -1,20 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MemoryRouter } from "react-router";
-import { AuthProvider } from "~/lib/auth";
-import { ValidationError } from "~/lib/api";
-import Login from "./login";
-
-const mockNavigate = vi.fn();
-
-vi.mock("react-router", async () => {
-	const actual = await vi.importActual("react-router");
-	return {
-		...actual,
-		useNavigate: () => mockNavigate,
-	};
-});
+import type { User } from "~/data/types";
 
 vi.mock("~/lib/api", () => ({
 	api: {
@@ -35,19 +20,15 @@ import { api } from "~/lib/api";
 const mockGet = vi.mocked(api.get);
 const mockPost = vi.mocked(api.post);
 
-function renderLogin() {
-	return render(
-		<MemoryRouter>
-			<AuthProvider>
-				<Login />
-			</AuthProvider>
-		</MemoryRouter>,
-	);
-}
+const personalUser: User = {
+	id: 1,
+	name: "Personal",
+	email: "personal@test.com",
+	role: "personal",
+};
 
 beforeEach(() => {
-	mockNavigate.mockClear();
-	mockGet.mockRejectedValue(new Error("Unauthorized"));
+	mockGet.mockReset();
 	mockPost.mockReset();
 });
 
@@ -55,111 +36,135 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-describe("Login page", () => {
-	it("renders the login form", async () => {
-		renderLogin();
+describe("clientLoader", () => {
+	it("returns empty object when user is not authenticated", async () => {
+		mockGet.mockRejectedValue(new Error("Unauthorized"));
+		const { clientLoader } = await import("./login");
 
-		await waitFor(() => {
-			expect(
-				screen.getByRole("heading", { name: "Entrar na sua conta" }),
-			).toBeInTheDocument();
-		});
+		const result = await clientLoader();
 
-		expect(screen.getByLabelText("Email")).toBeInTheDocument();
-		expect(screen.getByLabelText("Senha")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "Entrar" })).toBeInTheDocument();
+		expect(result).toEqual({});
 	});
 
-	it("submits credentials and navigates on success", async () => {
-		mockPost.mockResolvedValue({
-			id: 1,
-			name: "Test",
+	it("redirects authenticated user to their role home", async () => {
+		mockGet.mockResolvedValue(personalUser);
+		const { clientLoader } = await import("./login");
+
+		const result = await clientLoader();
+
+		expect(result).toBeInstanceOf(Response);
+		expect((result as Response).headers.get("Location")).toBe(
+			"/personal/alunos",
+		);
+	});
+});
+
+describe("clientAction", () => {
+	it("redirects to role home on successful login", async () => {
+		mockPost.mockResolvedValue(personalUser);
+		const { clientAction } = await import("./login");
+
+		const formData = new FormData();
+		formData.set("email", "test@test.com");
+		formData.set("password", "password123");
+
+		const result = await clientAction({
+			request: new Request("http://localhost/", {
+				method: "POST",
+				body: formData,
+			}),
+			params: {},
+		} as never);
+
+		expect(mockPost).toHaveBeenCalledWith("/api/login", {
 			email: "test@test.com",
-			role: "personal",
+			password: "password123",
 		});
-
-		renderLogin();
-		const user = userEvent.setup();
-
-		await waitFor(() => {
-			expect(screen.getByLabelText("Email")).toBeInTheDocument();
-		});
-
-		await user.type(screen.getByLabelText("Email"), "test@test.com");
-		await user.type(screen.getByLabelText("Senha"), "password123");
-		await user.click(screen.getByRole("button", { name: "Entrar" }));
-
-		await waitFor(() => {
-			expect(mockPost).toHaveBeenCalledWith("/api/login", {
-				email: "test@test.com",
-				password: "password123",
-			});
-		});
-
-		expect(mockNavigate).toHaveBeenCalledWith("/personal/alunos");
+		expect(result).toBeInstanceOf(Response);
+		expect((result as Response).headers.get("Location")).toBe(
+			"/personal/alunos",
+		);
 	});
 
-	it("shows generic error on non-validation failure", async () => {
-		mockPost.mockRejectedValue(new Error("Network error"));
+	it("redirects superadmin to /admin/personais", async () => {
+		mockPost.mockResolvedValue({ ...personalUser, role: "superadmin" });
+		const { clientAction } = await import("./login");
 
-		renderLogin();
-		const user = userEvent.setup();
+		const formData = new FormData();
+		formData.set("email", "admin@test.com");
+		formData.set("password", "pass");
 
-		await waitFor(() => {
-			expect(screen.getByLabelText("Email")).toBeInTheDocument();
-		});
+		const result = await clientAction({
+			request: new Request("http://localhost/", {
+				method: "POST",
+				body: formData,
+			}),
+			params: {},
+		} as never);
 
-		await user.type(screen.getByLabelText("Email"), "bad@test.com");
-		await user.type(screen.getByLabelText("Senha"), "wrong");
-		await user.click(screen.getByRole("button", { name: "Entrar" }));
-
-		await waitFor(() => {
-			expect(screen.getByText("Credenciais invalidas.")).toBeInTheDocument();
-		});
+		expect((result as Response).headers.get("Location")).toBe(
+			"/admin/personais",
+		);
 	});
 
-	it("shows field-level errors on validation failure", async () => {
+	it("redirects aluno to /aluno/treinos", async () => {
+		mockPost.mockResolvedValue({ ...personalUser, role: "aluno" });
+		const { clientAction } = await import("./login");
+
+		const formData = new FormData();
+		formData.set("email", "aluno@test.com");
+		formData.set("password", "pass");
+
+		const result = await clientAction({
+			request: new Request("http://localhost/", {
+				method: "POST",
+				body: formData,
+			}),
+			params: {},
+		} as never);
+
+		expect((result as Response).headers.get("Location")).toBe("/aluno/treinos");
+	});
+
+	it("returns field errors on validation failure", async () => {
 		const { ValidationError: MockValidationError } = await import("~/lib/api");
 		mockPost.mockRejectedValue(
 			new MockValidationError({
 				email: ["O campo email e obrigatorio."],
 			}),
 		);
+		const { clientAction } = await import("./login");
 
-		renderLogin();
-		const user = userEvent.setup();
+		const formData = new FormData();
+		const result = await clientAction({
+			request: new Request("http://localhost/", {
+				method: "POST",
+				body: formData,
+			}),
+			params: {},
+		} as never);
 
-		await waitFor(() => {
-			expect(screen.getByLabelText("Email")).toBeInTheDocument();
-		});
-
-		await user.click(screen.getByRole("button", { name: "Entrar" }));
-
-		await waitFor(() => {
-			expect(
-				screen.getByText("O campo email e obrigatorio."),
-			).toBeInTheDocument();
+		expect(result).toEqual({
+			fieldErrors: { email: ["O campo email e obrigatorio."] },
 		});
 	});
 
-	it("shows 'Entrando...' while submitting", async () => {
-		mockPost.mockReturnValue(new Promise(() => {}));
+	it("returns generic error on non-validation failure", async () => {
+		mockPost.mockRejectedValue(new Error("Network error"));
+		const { clientAction } = await import("./login");
 
-		renderLogin();
-		const user = userEvent.setup();
+		const formData = new FormData();
+		formData.set("email", "bad@test.com");
+		formData.set("password", "wrong");
 
-		await waitFor(() => {
-			expect(screen.getByLabelText("Email")).toBeInTheDocument();
-		});
+		const result = await clientAction({
+			request: new Request("http://localhost/", {
+				method: "POST",
+				body: formData,
+			}),
+			params: {},
+		} as never);
 
-		await user.type(screen.getByLabelText("Email"), "a@b.com");
-		await user.type(screen.getByLabelText("Senha"), "123");
-		await user.click(screen.getByRole("button", { name: "Entrar" }));
-
-		await waitFor(() => {
-			expect(
-				screen.getByRole("button", { name: "Entrando..." }),
-			).toBeDisabled();
-		});
+		expect(result).toEqual({ error: "Credenciais invalidas." });
 	});
 });

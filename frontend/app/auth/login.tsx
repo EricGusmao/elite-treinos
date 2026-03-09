@@ -3,45 +3,50 @@ import { Button } from "components/button";
 import { ErrorMessage, Field, Label } from "components/fieldset";
 import { Heading } from "components/heading";
 import { Input } from "components/input";
-import { useState } from "react";
-import { useAuth } from "~/lib/auth";
-import { ValidationError } from "~/lib/api";
-import type { ApiErrors } from "~/data/types";
+import { Form, useNavigation } from "react-router";
+import type { ApiErrors, User } from "~/data/types";
+import { ValidationError, api } from "~/lib/api";
+import { roleRedirect } from "~/lib/auth-utils";
+import type { Route } from "./+types/login";
 
-export default function Login() {
-	const { login } = useAuth();
-	const [error, setError] = useState<string | null>(null);
-	const [fieldErrors, setFieldErrors] = useState<ApiErrors>({});
-	const [submitting, setSubmitting] = useState(false);
-
-	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-		e.preventDefault();
-		setError(null);
-		setFieldErrors({});
-		setSubmitting(true);
-
-		const form = new FormData(e.currentTarget);
-		const email = form.get("email") as string;
-		const password = form.get("password") as string;
-
-		try {
-			await login(email, password);
-		} catch (err) {
-			if (err instanceof ValidationError) {
-				setFieldErrors(err.errors);
-			} else {
-				setError("Credenciais invalidas.");
-			}
-			setSubmitting(false);
-		}
+export async function clientLoader() {
+	try {
+		const user = await api.get<User>("/api/me", { skipAuthRedirect: true });
+		return roleRedirect(user);
+	} catch {
+		return {};
 	}
+}
+
+export async function clientAction({ request }: Route.ClientActionArgs) {
+	const formData = await request.formData();
+	try {
+		const user = await api.post<User>("/api/login", {
+			email: formData.get("email"),
+			password: formData.get("password"),
+		});
+		return roleRedirect(user);
+	} catch (err) {
+		if (err instanceof ValidationError) {
+			return { fieldErrors: err.errors };
+		}
+		return { error: "Credenciais invalidas." };
+	}
+}
+
+export default function Login({ actionData }: Route.ComponentProps) {
+	const navigation = useNavigation();
+	const submitting = navigation.state === "submitting";
+	const error =
+		actionData && "error" in actionData ? (actionData.error as string) : null;
+	const fieldErrors: ApiErrors =
+		actionData && "fieldErrors" in actionData
+			? (actionData.fieldErrors as ApiErrors)
+			: {};
 
 	return (
 		<AuthLayout>
-			<form
-				onSubmit={handleSubmit}
-				className="grid w-full max-w-sm grid-cols-1 gap-8"
-			>
+			<Form method="post" className="grid w-full max-w-sm grid-cols-1 gap-8">
 				<Heading>Entrar na sua conta</Heading>
 
 				{error && (
@@ -65,7 +70,7 @@ export default function Login() {
 				<Button type="submit" disabled={submitting}>
 					{submitting ? "Entrando..." : "Entrar"}
 				</Button>
-			</form>
+			</Form>
 		</AuthLayout>
 	);
 }

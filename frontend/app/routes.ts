@@ -7,6 +7,7 @@ import {
 
 export default [
 	index("auth/login.tsx"),
+	route("/logout", "auth/logout.tsx"),
 
 	// Superadmin
 	layout("admin/layout.tsx", [
