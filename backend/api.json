@@ -10,7 +10,7 @@
         }
     ],
     "paths": {
-        "/alunos": {
+        "/personal/alunos": {
             "get": {
                 "operationId": "alunos.index",
                 "tags": [
@@ -18,7 +18,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of `AlunoResource`",
+                        "description": "Array of `AlunoListResource`",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -27,7 +27,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/AlunoResource"
+                                                "$ref": "#/components/schemas/AlunoListResource"
                                             }
                                         }
                                     },
@@ -84,7 +84,7 @@
                 }
             }
         },
-        "/alunos/{aluno}": {
+        "/personal/alunos/{aluno}": {
             "get": {
                 "operationId": "alunos.show",
                 "tags": [
@@ -206,56 +206,7 @@
                 }
             }
         },
-        "/alunos/{aluno}/treinos": {
-            "get": {
-                "operationId": "alunoTreino.index",
-                "tags": [
-                    "AlunoTreino"
-                ],
-                "parameters": [
-                    {
-                        "name": "aluno",
-                        "in": "path",
-                        "required": true,
-                        "description": "The aluno ID",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Array of `TreinoResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/TreinoResource"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            },
+        "/personal/alunos/{aluno}/treinos": {
             "post": {
                 "operationId": "alunoTreino.store",
                 "tags": [
@@ -308,7 +259,7 @@
                 }
             }
         },
-        "/alunos/{aluno}/treinos/{treino}": {
+        "/personal/alunos/{aluno}/treinos/{treino}": {
             "delete": {
                 "operationId": "alunoTreino.destroy",
                 "tags": [
@@ -343,6 +294,45 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "operationId": "auth.logout",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/me": {
+            "get": {
+                "operationId": "auth.me",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`UserResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResource"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -402,46 +392,7 @@
                 }
             }
         },
-        "/logout": {
-            "post": {
-                "operationId": "auth.logout",
-                "tags": [
-                    "Auth"
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No content"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
-        "/me": {
-            "get": {
-                "operationId": "auth.me",
-                "tags": [
-                    "Auth"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "`UserResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/UserResource"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
-        "/meus-treinos": {
+        "/aluno/meus-treinos": {
             "get": {
                 "operationId": "meuTreino.index",
                 "tags": [
@@ -449,7 +400,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of `TreinoResource`",
+                        "description": "Array of `TreinoSummaryResource`",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -458,7 +409,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/TreinoResource"
+                                                "$ref": "#/components/schemas/TreinoSummaryResource"
                                             }
                                         }
                                     },
@@ -495,7 +446,7 @@
                 }
             }
         },
-        "/meus-treinos/{treino}": {
+        "/aluno/meus-treinos/{treino}": {
             "get": {
                 "operationId": "meuTreino.show",
                 "tags": [
@@ -552,7 +503,7 @@
                 }
             }
         },
-        "/personais": {
+        "/admin/personais": {
             "get": {
                 "operationId": "personais.index",
                 "tags": [
@@ -560,7 +511,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of `PersonalResource`",
+                        "description": "Array of `PersonalListResource`",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -569,7 +520,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/PersonalResource"
+                                                "$ref": "#/components/schemas/PersonalListResource"
                                             }
                                         }
                                     },
@@ -605,11 +556,11 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "`PersonalResource`",
+                        "description": "`PersonalListResource`",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PersonalResource"
+                                    "$ref": "#/components/schemas/PersonalListResource"
                                 }
                             }
                         }
@@ -626,7 +577,7 @@
                 }
             }
         },
-        "/personais/{personal}": {
+        "/admin/personais/{personal}": {
             "get": {
                 "operationId": "personais.show",
                 "tags": [
@@ -645,11 +596,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "`PersonalResource`",
+                        "description": "`PersonalDetailResource`",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PersonalResource"
+                                    "$ref": "#/components/schemas/PersonalDetailResource"
                                 }
                             }
                         }
@@ -693,11 +644,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "`PersonalResource`",
+                        "description": "`PersonalListResource`",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PersonalResource"
+                                    "$ref": "#/components/schemas/PersonalListResource"
                                 }
                             }
                         }
@@ -748,57 +699,6 @@
                 }
             }
         },
-        "/personais/{personal}/alunos": {
-            "get": {
-                "operationId": "personalAluno.index",
-                "tags": [
-                    "PersonalAluno"
-                ],
-                "parameters": [
-                    {
-                        "name": "personal",
-                        "in": "path",
-                        "required": true,
-                        "description": "The personal ID",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Array of `AlunoResource`",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/AlunoResource"
-                                            }
-                                        }
-                                    },
-                                    "required": [
-                                        "data"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
         "/treinos": {
             "get": {
                 "operationId": "treino.index",
@@ -807,7 +707,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of `TreinoResource`",
+                        "description": "Array of `TreinoSummaryResource`",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -816,7 +716,7 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/TreinoResource"
+                                                "$ref": "#/components/schemas/TreinoSummaryResource"
                                             }
                                         }
                                     },
@@ -826,6 +726,43 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/personal/treinos/{treino}": {
+            "get": {
+                "operationId": "treino.show",
+                "tags": [
+                    "Treino"
+                ],
+                "parameters": [
+                    {
+                        "name": "treino",
+                        "in": "path",
+                        "required": true,
+                        "description": "The treino ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`TreinoResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TreinoResource"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -836,6 +773,30 @@
     },
     "components": {
         "schemas": {
+            "AlunoListResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "nome": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "dataNascimento": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "nome",
+                    "email",
+                    "dataNascimento"
+                ],
+                "title": "AlunoListResource"
+            },
             "AlunoResource": {
                 "type": "object",
                 "properties": {
@@ -857,12 +818,11 @@
                             "null"
                         ]
                     },
-                    "personalId": {
-                        "type": "integer"
-                    },
                     "treinos": {
-                        "type": "object",
-                        "additionalProperties": {}
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TreinoSummaryResource"
+                        }
                     }
                 },
                 "required": [
@@ -871,10 +831,29 @@
                     "email",
                     "dataNascimento",
                     "observacoes",
-                    "personalId",
                     "treinos"
                 ],
                 "title": "AlunoResource"
+            },
+            "AlunoSummaryResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "nome": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "nome",
+                    "email"
+                ],
+                "title": "AlunoSummaryResource"
             },
             "AssignTreinoRequest": {
                 "type": "object",
@@ -935,7 +914,7 @@
                 ],
                 "title": "LoginRequest"
             },
-            "PersonalResource": {
+            "PersonalDetailResource": {
                 "type": "object",
                 "properties": {
                     "id": {
@@ -955,6 +934,12 @@
                             "string",
                             "null"
                         ]
+                    },
+                    "alunos": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AlunoSummaryResource"
+                        }
                     }
                 },
                 "required": [
@@ -962,9 +947,30 @@
                     "nome",
                     "email",
                     "telefone",
-                    "cref"
+                    "cref",
+                    "alunos"
                 ],
-                "title": "PersonalResource"
+                "title": "PersonalDetailResource"
+            },
+            "PersonalListResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "nome": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "nome",
+                    "email"
+                ],
+                "title": "PersonalListResource"
             },
             "StoreAlunoRequest": {
                 "type": "object",
@@ -1059,9 +1065,34 @@
                     "id",
                     "codigo",
                     "nome",
-                    "objetivo"
+                    "objetivo",
+                    "exercicios"
                 ],
                 "title": "TreinoResource"
+            },
+            "TreinoSummaryResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "codigo": {
+                        "type": "string"
+                    },
+                    "nome": {
+                        "type": "string"
+                    },
+                    "objetivo": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "codigo",
+                    "nome",
+                    "objetivo"
+                ],
+                "title": "TreinoSummaryResource"
             },
             "UpdateAlunoRequest": {
                 "type": "object",
